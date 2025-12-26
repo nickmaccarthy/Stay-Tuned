@@ -1,0 +1,36 @@
+# Pre-commit hooks for Stay Tuned iOS project
+# Install: brew install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # General file hygiene
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # SwiftLint for Swift code linting
+  - repo: https://github.com/realm/SwiftLint
+    rev: 0.54.0
+    hooks:
+      - id: swiftlint
+        args: ['--strict', '--config', '.swiftlint.yml']
+        # Only run on Swift files in the main project (not generated files)
+        files: 'Stay Tuned/.*\.swift$'
+
+  # SwiftFormat for consistent code formatting
+  - repo: https://github.com/nicklockwood/SwiftFormat
+    rev: 0.53.0
+    hooks:
+      - id: swiftformat
+        files: 'Stay Tuned/.*\.swift$'
+
