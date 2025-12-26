@@ -210,7 +210,7 @@ struct TuningMeterView: View {
         var displayCents = animatedCents
         if abs(displayCents) <= 7 {
             // Within ±5 cents: compress to ±2 visual range (feels more "locked in")
-            displayCents = displayCents * 0.4
+            displayCents *= 0.4
         }
         
         let normalizedPosition = (displayCents + 50) / 100

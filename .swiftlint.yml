@@ -42,6 +42,11 @@ disabled_rules:
   - function_body_length  # Some audio processing functions need to be long
   - cyclomatic_complexity  # Audio algorithms can be complex
 
+# Type name exceptions (Xcode auto-generates names with underscores)
+type_name:
+  excluded:
+    - Stay_TunedApp
+
 # Rule configurations
 identifier_name:
   min_length:

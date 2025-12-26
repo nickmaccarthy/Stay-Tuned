@@ -11,22 +11,22 @@ import Combine
 /// ViewModel for the metronome feature
 @MainActor
 final class MetronomeViewModel: ObservableObject {
-    
+
     // MARK: - Published Properties
-    
+
     @Published var tempo: Double = 120
     @Published var isPlaying = false
     @Published var currentBeat: Int = 1
     @Published var timeSignature: TimeSignature = .fourFour
     @Published var volume: Float = 0.7
-    
+
     // MARK: - Persistence
-    
+
     @AppStorage("metronomeTempo") private var savedTempo: Int = 120
     @AppStorage("metronomeTimeSignature") private var savedTimeSignature: String = "4/4"
-    
+
     // MARK: - Private Properties
-    
+
     private let engine = MetronomeEngine()
     private var tapTimes: [Date] = []
     private let maxTapCount = 4
@@ -160,4 +160,3 @@ final class MetronomeViewModel: ObservableObject {
         tempo = max(40, min(240, calculatedBPM))
     }
 }
-
