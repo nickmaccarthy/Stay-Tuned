@@ -15,6 +15,10 @@
   <img src="https://img.shields.io/badge/License-MIT-lightgrey" alt="License">
 </p>
 
+<p align="center">
+  Stay Tuned is a free, open-source guitar tuner app for iPhone. Whether you're a beginner learning your first chords or a seasoned player gigging on stage, Stay Tuned helps you get in tune quickly and accurately. With real-time pitch detection, multiple tuning presets, a built-in metronome, and a stunning visual interface, it's the only tuner you'll ever need.
+</p>
+
 ---
 
 ## ✨ Features
