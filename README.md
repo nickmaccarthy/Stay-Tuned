@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="app-icon-logo.png" alt="Stay Tuned Logo" width="120" height="120">
+  <img src="app-logo.png" alt="Stay Tuned Logo" width="120" height="120">
 </p>
 
 <h1 align="center">Stay Tuned</h1>
