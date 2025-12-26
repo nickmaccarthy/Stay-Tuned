@@ -1,0 +1,115 @@
+{
+  "identifier" : "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "TIP_SMALL_001",
+      "localizations" : [
+        {
+          "description" : "Buy the developer a coffee",
+          "displayName" : "Coffee Tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.staytuned.tip.coffee",
+      "referenceName" : "Coffee Tip",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "TIP_MEDIUM_001",
+      "localizations" : [
+        {
+          "description" : "Help buy a new set of guitar strings",
+          "displayName" : "New Strings Tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.staytuned.tip.strings",
+      "referenceName" : "New Strings Tip",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "TIP_LARGE_001",
+      "localizations" : [
+        {
+          "description" : "Support the developer with a generous tip",
+          "displayName" : "Guitar Strap Tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.staytuned.tip.guitar_strap",
+      "referenceName" : "Guitar Strap Tip",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "STAYTUNED001",
+    "_developerTeamID" : "YOURTEAMID",
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}
+
