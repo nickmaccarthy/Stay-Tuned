@@ -9,10 +9,12 @@ import SwiftUI
 
 /// Splash screen displayed on app launch before fading into main tuner view
 struct SplashScreenView: View {
-    
-    @State private var logoScale: CGFloat = 0.8
-    @State private var logoOpacity: Double = 0
-    
+
+    @State
+    private var logoScale: CGFloat = 0.8
+    @State
+    private var logoOpacity: Double = 0
+
     var body: some View {
         ZStack {
             // Purple gradient background (matches TunerView)
@@ -20,13 +22,13 @@ struct SplashScreenView: View {
                 colors: [
                     Color(hex: "1a0a2e"),
                     Color(hex: "2d1b4e"),
-                    Color(hex: "1a0a2e")
+                    Color(hex: "1a0a2e"),
                 ],
                 startPoint: .top,
                 endPoint: .bottom
             )
             .ignoresSafeArea()
-            
+
             // Centered logo with subtle scale animation
             Image("InAppLogo")
                 .resizable()
@@ -48,5 +50,3 @@ struct SplashScreenView: View {
 #Preview {
     SplashScreenView()
 }
-
-

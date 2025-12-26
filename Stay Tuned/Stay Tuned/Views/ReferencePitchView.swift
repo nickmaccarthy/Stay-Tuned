@@ -9,11 +9,12 @@ import SwiftUI
 
 /// View for adjusting the reference pitch setting
 struct ReferencePitchView: View {
-    @Binding var referencePitch: Int
-    
+    @Binding
+    var referencePitch: Int
+
     private let minPitch = 432
     private let maxPitch = 444
-    
+
     var body: some View {
         ZStack {
             // Background gradient matching app theme
@@ -21,13 +22,13 @@ struct ReferencePitchView: View {
                 colors: [
                     Color(hex: "1a0a2e"),
                     Color(hex: "2d1b4e"),
-                    Color(hex: "1a0a2e")
+                    Color(hex: "1a0a2e"),
                 ],
                 startPoint: .top,
                 endPoint: .bottom
             )
             .ignoresSafeArea()
-            
+
             ScrollView {
                 VStack(spacing: 24) {
                     // Current pitch display
@@ -35,7 +36,7 @@ struct ReferencePitchView: View {
                         Text("A = \(referencePitch) Hz")
                             .font(.system(size: 42, weight: .bold, design: .rounded))
                             .foregroundColor(.white)
-                        
+
                         if referencePitch != 440 {
                             Text(pitchDescription)
                                 .font(.system(size: 14, weight: .medium))
@@ -44,7 +45,7 @@ struct ReferencePitchView: View {
                     }
                     .padding(.top, 20)
                     .padding(.bottom, 8)
-                    
+
                     // Slider section
                     VStack(spacing: 12) {
                         Slider(
@@ -52,39 +53,39 @@ struct ReferencePitchView: View {
                                 get: { Double(referencePitch) },
                                 set: { referencePitch = Int($0.rounded()) }
                             ),
-                            in: Double(minPitch)...Double(maxPitch),
+                            in: Double(minPitch) ... Double(maxPitch),
                             step: 1
                         )
                         .tint(Color(hex: "4ECDC4"))
-                        
+
                         // Slider labels
                         HStack {
                             Text("\(minPitch) Hz")
                                 .font(.system(size: 12, weight: .medium, design: .monospaced))
                                 .foregroundColor(Color(hex: "7c6c9a"))
-                            
+
                             Spacer()
-                            
+
                             Text("\(maxPitch) Hz")
                                 .font(.system(size: 12, weight: .medium, design: .monospaced))
                                 .foregroundColor(Color(hex: "7c6c9a"))
                         }
                     }
                     .padding(.horizontal, 4)
-                    
+
                     // Preset buttons
                     HStack(spacing: 12) {
                         presetButton(pitch: 432, label: "432")
                         presetButton(pitch: 440, label: "440")
                         presetButton(pitch: 442, label: "442")
                     }
-                    
+
                     // Explanation blurb
                     VStack(alignment: .leading, spacing: 12) {
                         Text("What is reference pitch?")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(Color(hex: "9a8aba"))
-                        
+
                         Text("The reference pitch sets the frequency of the A4 note. All other notes are calculated relative to this frequency.\n\nStandard tuning uses A=440Hz. Orchestras often tune slightly higher (441-443Hz) for a brighter sound, while some musicians prefer A=432Hz for a warmer, more relaxed tone.")
                             .font(.system(size: 13))
                             .foregroundColor(Color(hex: "7c6c9a"))
@@ -97,7 +98,7 @@ struct ReferencePitchView: View {
                             .fill(Color.white.opacity(0.05))
                     )
                     .padding(.top, 8)
-                    
+
                     Spacer()
                 }
                 .padding(.horizontal, 24)
@@ -108,7 +109,7 @@ struct ReferencePitchView: View {
         .toolbarBackground(Color(hex: "1a0a2e"), for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
     }
-    
+
     private func presetButton(pitch: Int, label: String) -> some View {
         Button {
             withAnimation(.spring(response: 0.3)) {
@@ -127,7 +128,7 @@ struct ReferencePitchView: View {
         }
         .buttonStyle(.plain)
     }
-    
+
     private var pitchDescription: String {
         if referencePitch < 440 {
             return "Lower than standard"
@@ -143,5 +144,3 @@ struct ReferencePitchView: View {
         ReferencePitchView(referencePitch: .constant(440))
     }
 }
-
-

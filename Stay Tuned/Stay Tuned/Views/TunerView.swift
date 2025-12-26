@@ -9,26 +9,29 @@ import SwiftUI
 
 /// Main tuner view assembling all components
 struct TunerView: View {
-    @StateObject private var viewModel = TunerViewModel()
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
-    
+    @StateObject
+    private var viewModel = TunerViewModel()
+    @Environment(\.horizontalSizeClass)
+    private var horizontalSizeClass
+    @Environment(\.verticalSizeClass)
+    private var verticalSizeClass
+
     /// Whether we're on iPad (regular width)
     private var isRegularWidth: Bool {
         horizontalSizeClass == .regular
     }
-    
+
     /// Whether we're in landscape on iPad
     private var isIPadLandscape: Bool {
         horizontalSizeClass == .regular && verticalSizeClass == .compact
     }
-    
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
                 // Background gradient
                 backgroundGradient
-                
+
                 // Spectrum analyzer at the bottom
                 VStack {
                     Spacer()
@@ -48,7 +51,7 @@ struct TunerView: View {
                     )
                 }
                 .ignoresSafeArea()
-                
+
                 // Main content - use landscape or portrait layout
                 if isIPadLandscape {
                     // iPad landscape: side-by-side layout
@@ -58,17 +61,17 @@ struct TunerView: View {
                     portraitContent(geometry: geometry)
                         .frame(maxWidth: isRegularWidth ? LayoutConstants.maxContentWidth : nil)
                 }
-                
+
                 // All strings tuned quick flash celebration
                 if viewModel.showAllTunedFlash {
                     allTunedFlashOverlay
                 }
-                
+
                 // Permission overlay if needed
                 if !viewModel.hasPermission {
                     permissionOverlay
                 }
-                
+
             }
         }
         .onAppear {
@@ -79,32 +82,32 @@ struct TunerView: View {
             viewModel.stopListening()
         }
     }
-    
+
     private var backgroundGradient: some View {
         LinearGradient(
             colors: [
                 Color(hex: "1a0a2e"),
                 Color(hex: "2d1b4e"),
-                Color(hex: "1a0a2e")
+                Color(hex: "1a0a2e"),
             ],
             startPoint: .top,
             endPoint: .bottom
         )
         .ignoresSafeArea()
     }
-    
+
     // MARK: - Portrait Layout (iPhone + iPad Portrait)
-    
+
     @ViewBuilder
     private func portraitContent(geometry: GeometryProxy) -> some View {
         VStack(spacing: 0) {
             // Header with tuning picker
             headerSection
                 .padding(.top, 8)
-            
+
             Spacer()
                 .frame(height: isRegularWidth ? 40 : 30)
-            
+
             // Tuning meter with reference tone overlay
             TuningMeterView(
                 centsDeviation: viewModel.centsDeviation,
@@ -113,7 +116,7 @@ struct TunerView: View {
                 showConfirmation: viewModel.showTuneConfirmation,
                 sustainedInTune: viewModel.sustainedInTune,
                 detectedFrequency: viewModel.detectedFrequency,
-                targetFrequency: viewModel.isChromatic 
+                targetFrequency: viewModel.isChromatic
                     ? (viewModel.detectedNote?.targetFrequency ?? 0)
                     : viewModel.adjustedFrequency(for: viewModel.selectedString?.frequency ?? 0),
                 currentDecibels: viewModel.currentDecibels,
@@ -146,10 +149,10 @@ struct TunerView: View {
                     .animation(.easeInOut(duration: 0.2), value: viewModel.isPlayingTone)
                 }
             }
-            
+
             Spacer()
                 .frame(height: isRegularWidth ? 50 : 40)
-            
+
             // Show either headstock (instrument mode) or chromatic display
             if viewModel.isChromatic {
                 ChromaticDisplayView(
@@ -186,18 +189,18 @@ struct TunerView: View {
                 ))
                 .padding(.horizontal, 32)
             }
-            
+
             Spacer()
-            
+
             // Tip Jar
             tipJarSection
                 .padding(.bottom, 8)
         }
         .padding(.horizontal, LayoutConstants.horizontalPadding(for: horizontalSizeClass))
     }
-    
+
     // MARK: - iPad Landscape Layout
-    
+
     @ViewBuilder
     private func iPadLandscapeContent(geometry: GeometryProxy) -> some View {
         HStack(spacing: 40) {
@@ -230,15 +233,15 @@ struct TunerView: View {
                 }
             }
             .frame(maxWidth: geometry.size.width * 0.4)
-            
+
             // Right side: Header + Meter
             VStack(spacing: 0) {
                 headerSection
                     .padding(.top, 8)
-                
+
                 Spacer()
                     .frame(height: 30)
-                
+
                 TuningMeterView(
                     centsDeviation: viewModel.centsDeviation,
                     isInTune: viewModel.isInTune,
@@ -246,7 +249,7 @@ struct TunerView: View {
                     showConfirmation: viewModel.showTuneConfirmation,
                     sustainedInTune: viewModel.sustainedInTune,
                     detectedFrequency: viewModel.detectedFrequency,
-                    targetFrequency: viewModel.isChromatic 
+                    targetFrequency: viewModel.isChromatic
                         ? (viewModel.detectedNote?.targetFrequency ?? 0)
                         : viewModel.adjustedFrequency(for: viewModel.selectedString?.frequency ?? 0),
                     currentDecibels: viewModel.currentDecibels,
@@ -279,9 +282,9 @@ struct TunerView: View {
                         .animation(.easeInOut(duration: 0.2), value: viewModel.isPlayingTone)
                     }
                 }
-                
+
                 Spacer()
-                
+
                 tipJarSection
                     .padding(.bottom, 8)
             }
@@ -289,7 +292,7 @@ struct TunerView: View {
         }
         .padding(.horizontal, LayoutConstants.iPadHorizontalPadding)
     }
-    
+
     private var headerSection: some View {
         HStack(alignment: .top) {
             // Tuning picker with chromatic mode support
@@ -304,15 +307,15 @@ struct TunerView: View {
                     set: { viewModel.setMode($0) }
                 )
             )
-            
+
             Spacer()
-            
+
             // Listening indicator
             listeningIndicator
         }
         .padding(.horizontal, 16)
     }
-    
+
     private var listeningIndicator: some View {
         HStack(spacing: 12) {
             // Reference pitch indicator (when not standard 440Hz)
@@ -328,7 +331,7 @@ struct TunerView: View {
                             .fill(Color(hex: "4ECDC4").opacity(0.15))
                     )
             }
-            
+
             // Auto-detect toggle (only in instrument mode)
             if !viewModel.isChromatic {
                 VStack(spacing: 2) {
@@ -339,13 +342,13 @@ struct TunerView: View {
                     .toggleStyle(SwitchToggleStyle(tint: Color(hex: "4ECDC4")))
                     .labelsHidden()
                     .scaleEffect(0.75)
-                    
+
                     Text("Auto")
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(Color(hex: "9a8aba"))
                 }
             }
-            
+
             // Metronome button
             Button {
                 showMetronome = true
@@ -359,7 +362,7 @@ struct TunerView: View {
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
             }
-            
+
             // Settings button
             Button {
                 showSettings = true
@@ -381,11 +384,14 @@ struct TunerView: View {
             }
         }
     }
-    
-    @State private var showTipJar = false
-    @State private var showSettings = false
-    @State private var showMetronome = false
-    
+
+    @State
+    private var showTipJar = false
+    @State
+    private var showSettings = false
+    @State
+    private var showMetronome = false
+
     private var tipJarSection: some View {
         Button {
             showTipJar = true
@@ -394,7 +400,7 @@ struct TunerView: View {
                 Image(systemName: "heart.fill")
                     .font(.system(size: 12))
                     .foregroundColor(.pink)
-                
+
                 Text("Tip Jar")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(Color(hex: "9a8aba"))
@@ -413,13 +419,13 @@ struct TunerView: View {
                 .presentationDragIndicator(.visible)
         }
     }
-    
+
     private var allTunedFlashOverlay: some View {
         ZStack {
             // Subtle dark backdrop
             Color.black.opacity(0.4)
                 .ignoresSafeArea()
-            
+
             // Mascot with celebration message
             VStack(spacing: 12) {
                 Image("InAppLogo")
@@ -427,12 +433,12 @@ struct TunerView: View {
                     .scaledToFit()
                     .frame(height: 150)
                     .shadow(color: .green.opacity(0.6), radius: 20)
-                
+
                 Text("All Tuned!")
                     .font(.title.bold())
                     .foregroundColor(.white)
                     .shadow(color: .black.opacity(0.5), radius: 4)
-                
+
                 Text("You're ready to play!")
                     .font(.subheadline)
                     .foregroundColor(Color(hex: "9a8aba"))
@@ -443,29 +449,29 @@ struct TunerView: View {
         .transition(.opacity.combined(with: .scale))
         .animation(.spring(response: 0.4, dampingFraction: 0.6), value: viewModel.showAllTunedFlash)
     }
-    
+
     private var permissionOverlay: some View {
         ZStack {
             Color.black.opacity(0.8)
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 24) {
                 Image(systemName: "mic.slash.circle.fill")
                     .font(.system(size: 60))
                     .foregroundColor(Color(hex: "9a8aba"))
-                
+
                 VStack(spacing: 8) {
                     Text("Microphone Access Required")
                         .font(.title2.bold())
                         .foregroundColor(.white)
-                    
+
                     Text("Stay Tuned needs access to your microphone to detect the pitch of your instrument.")
                         .font(.subheadline)
                         .foregroundColor(Color(hex: "9a8aba"))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                 }
-                
+
                 Button {
                     viewModel.requestPermission()
                 } label: {

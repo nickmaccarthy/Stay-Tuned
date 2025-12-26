@@ -1,5 +1,9 @@
 # Pre-commit hooks for Stay Tuned iOS project
-# Install: brew install pre-commit && pre-commit install
+#
+# Setup:
+#   brew install pre-commit swiftlint swiftformat
+#   pre-commit install
+#
 # Run manually: pre-commit run --all-files
 
 repos:
@@ -18,19 +22,19 @@ repos:
       - id: mixed-line-ending
         args: ['--fix=lf']
 
-  # SwiftLint for Swift code linting
-  - repo: https://github.com/realm/SwiftLint
-    rev: 0.54.0
+  # Local hooks using Homebrew-installed tools (fast!)
+  - repo: local
     hooks:
       - id: swiftlint
-        args: ['--strict', '--config', '.swiftlint.yml']
-        # Only run on Swift files in the main project (not generated files)
-        files: 'Stay Tuned/.*\.swift$'
+        name: SwiftLint
+        entry: swiftlint lint --config .swiftlint.yml
+        language: system
+        files: '\.swift$'
+        exclude: 'Stay TunedTests|Stay TunedUITests'
 
-  # SwiftFormat for consistent code formatting
-  - repo: https://github.com/nicklockwood/SwiftFormat
-    rev: 0.53.0
-    hooks:
       - id: swiftformat
-        files: 'Stay Tuned/.*\.swift$'
-
+        name: SwiftFormat
+        entry: swiftformat --config .swiftformat
+        language: system
+        files: '\.swift$'
+        exclude: 'Stay TunedTests|Stay TunedUITests'

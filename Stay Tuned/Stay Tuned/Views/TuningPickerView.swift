@@ -9,12 +9,15 @@ import SwiftUI
 
 /// Dropdown picker for selecting guitar tuning or chromatic mode
 struct TuningPickerView: View {
-    @Binding var selectedTuning: Tuning
+    @Binding
+    var selectedTuning: Tuning
     let availableTunings: [Tuning]
-    @Binding var tunerMode: TunerMode
-    
-    @State private var showingSheet = false
-    
+    @Binding
+    var tunerMode: TunerMode
+
+    @State
+    private var showingSheet = false
+
     var body: some View {
         Button {
             showingSheet = true
@@ -24,12 +27,12 @@ struct TuningPickerView: View {
                     Text(labelTitle)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.white)
-                    
+
                     Text(labelSubtitle)
                         .font(.system(size: 11))
                         .foregroundColor(Color(hex: "9a8aba"))
                 }
-                
+
                 Image(systemName: "chevron.down")
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(Color(hex: "9a8aba"))
@@ -58,11 +61,11 @@ struct TuningPickerView: View {
             .presentationDragIndicator(.visible)
         }
     }
-    
+
     private var labelTitle: String {
         tunerMode == .chromatic ? "Chromatic" : "Guitar"
     }
-    
+
     private var labelSubtitle: String {
         tunerMode == .chromatic ? "All Notes" : selectedTuning.name
     }
@@ -70,11 +73,14 @@ struct TuningPickerView: View {
 
 /// Sheet-based tuning/mode selector
 struct TuningSelectionSheet: View {
-    @Binding var selectedTuning: Tuning
+    @Binding
+    var selectedTuning: Tuning
     let availableTunings: [Tuning]
-    @Binding var tunerMode: TunerMode
-    @Binding var isPresented: Bool
-    
+    @Binding
+    var tunerMode: TunerMode
+    @Binding
+    var isPresented: Bool
+
     var body: some View {
         NavigationView {
             List {
@@ -97,7 +103,7 @@ struct TuningSelectionSheet: View {
                 } header: {
                     Text("Mode")
                 }
-                
+
                 // Tunings section
                 Section {
                     ForEach(availableTunings) { tuning in
@@ -110,12 +116,12 @@ struct TuningSelectionSheet: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(tuning.name)
                                         .foregroundColor(.primary)
-                                    Text(tuning.strings.map { $0.name }.joined(separator: " "))
+                                    Text(tuning.strings.map(\.name).joined(separator: " "))
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
                                 Spacer()
-                                if tunerMode == .instrument && tuning.id == selectedTuning.id {
+                                if tunerMode == .instrument, tuning.id == selectedTuning.id {
                                     Image(systemName: "checkmark")
                                         .foregroundColor(.green)
                                 }
@@ -143,17 +149,16 @@ struct TuningSelectionSheet: View {
     ZStack {
         Color(hex: "1a0a2e")
             .ignoresSafeArea()
-        
+
         VStack {
             TuningPickerView(
                 selectedTuning: .constant(.standard),
                 availableTunings: Tuning.allTunings,
                 tunerMode: .constant(.instrument)
             )
-            
+
             Spacer()
         }
         .padding()
     }
 }
-

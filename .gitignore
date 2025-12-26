@@ -3,7 +3,7 @@
 
 # Development plans (internal)
 plans/
-PLAN*.md 
+PLAN*.md
 PHASE*.md
 
 # Xcode user data

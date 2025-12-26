@@ -16,7 +16,7 @@ import Testing
 @testable import Stay_Tuned
 
 struct Stay_TunedTests {
-    
+
     @Test("App module can be imported")
     func testModuleImport() {
         // This test ensures the module is properly configured for testing

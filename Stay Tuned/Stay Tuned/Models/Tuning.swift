@@ -11,7 +11,7 @@ import Foundation
 struct Tuning: Identifiable, Hashable {
     let id: String
     let name: String
-    let instrument: String  // e.g., "Guitar", "Bass", "Ukulele"
+    let instrument: String // e.g., "Guitar", "Bass", "Ukulele"
     let strings: [GuitarString]
 
     /// Find the closest string to a given frequency
@@ -20,13 +20,13 @@ struct Tuning: Identifiable, Hashable {
 
         return strings.min(by: { string1, string2 in
             abs(centsDeviation(from: frequency, to: string1.frequency)) <
-            abs(centsDeviation(from: frequency, to: string2.frequency))
+                abs(centsDeviation(from: frequency, to: string2.frequency))
         })
     }
 
     /// Calculate cents deviation between two frequencies
     private func centsDeviation(from detected: Double, to target: Double) -> Double {
-        guard detected > 0 && target > 0 else { return 0 }
+        guard detected > 0, target > 0 else { return 0 }
         return 1200 * log2(detected / target)
     }
 }

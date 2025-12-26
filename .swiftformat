@@ -1,0 +1,36 @@
+# SwiftFormat configuration for Stay Tuned
+# Documentation: https://github.com/nicklockwood/SwiftFormat/blob/main/Rules.md
+
+# Swift version
+--swiftversion 5.9
+
+# File options
+--exclude Stay Tuned/Stay Tuned.xcodeproj,Stay TunedTests,Stay TunedUITests,.build
+
+# Format options
+--indent 4
+--indentcase false
+--trimwhitespace always
+--voidtype void
+--semicolons inline
+--wrapcollections before-first
+--wraparguments before-first
+--wrapparameters before-first
+--closingparen balanced
+--funcattributes prev-line
+--typeattributes prev-line
+--varattributes prev-line
+--marktypes never
+--markextensions never
+--extensionacl on-declarations
+
+# SwiftUI-friendly options
+--self init-only
+--importgrouping testable-last
+--commas always
+
+# Disabled rules (too aggressive for existing codebase)
+--disable redundantSelf
+--disable wrapMultilineStatementBraces
+--disable blankLinesAtStartOfScope
+--disable blankLinesAtEndOfScope

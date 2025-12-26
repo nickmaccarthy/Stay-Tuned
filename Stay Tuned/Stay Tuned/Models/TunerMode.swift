@@ -12,5 +12,3 @@ enum TunerMode: String, CaseIterable {
     case instrument
     case chromatic
 }
-
-

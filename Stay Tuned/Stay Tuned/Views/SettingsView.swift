@@ -9,15 +9,19 @@ import SwiftUI
 
 /// Main settings view with navigation to sub-settings
 struct SettingsView: View {
-    @Binding var referencePitch: Int
-    @Binding var toneType: ToneType
-    @Environment(\.dismiss) private var dismiss
-    @State private var showTipJar = false
-    
+    @Binding
+    var referencePitch: Int
+    @Binding
+    var toneType: ToneType
+    @Environment(\.dismiss)
+    private var dismiss
+    @State
+    private var showTipJar = false
+
     private var appVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
     }
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -26,13 +30,13 @@ struct SettingsView: View {
                     colors: [
                         Color(hex: "1a0a2e"),
                         Color(hex: "2d1b4e"),
-                        Color(hex: "1a0a2e")
+                        Color(hex: "1a0a2e"),
                     ],
                     startPoint: .top,
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
-                
+
                 ScrollView {
                     VStack(spacing: 16) {
                         // Tuning section
@@ -48,11 +52,11 @@ struct SettingsView: View {
                                     value: "A = \(referencePitch) Hz"
                                 )
                             }
-                            
+
                             Divider()
                                 .background(Color.white.opacity(0.1))
                                 .padding(.leading, 58)
-                            
+
                             // Reference Tone row
                             NavigationLink {
                                 ToneTypeView(toneType: $toneType)
@@ -65,7 +69,7 @@ struct SettingsView: View {
                                 )
                             }
                         }
-                        
+
                         // Support section
                         settingsSection(title: "Support") {
                             Button {
@@ -84,7 +88,7 @@ struct SettingsView: View {
                                 .presentationDetents([.medium])
                                 .presentationDragIndicator(.visible)
                         }
-                        
+
                         // About section
                         settingsSection(title: "About") {
                             NavigationLink {
@@ -117,14 +121,14 @@ struct SettingsView: View {
             .toolbarColorScheme(.dark, for: .navigationBar)
         }
     }
-    
-    private func settingsSection<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
+
+    private func settingsSection(title: String, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title.uppercased())
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(Color(hex: "7c6c9a"))
                 .padding(.leading, 4)
-            
+
             VStack(spacing: 0) {
                 content()
             }
@@ -134,7 +138,7 @@ struct SettingsView: View {
             )
         }
     }
-    
+
     private func settingsRow(icon: String, iconColor: Color, title: String, value: String) -> some View {
         HStack(spacing: 14) {
             // Icon
@@ -146,19 +150,19 @@ struct SettingsView: View {
                     RoundedRectangle(cornerRadius: 6)
                         .fill(iconColor.opacity(0.15))
                 )
-            
+
             // Title
             Text(title)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(.white)
-            
+
             Spacer()
-            
+
             // Value
             Text(value)
                 .font(.system(size: 14, weight: .regular))
                 .foregroundColor(Color(hex: "9a8aba"))
-            
+
             // Chevron
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .semibold))

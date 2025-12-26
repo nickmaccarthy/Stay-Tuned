@@ -8,13 +8,14 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var showSplash = true
-    
+    @State
+    private var showSplash = true
+
     var body: some View {
         ZStack {
             // Main tuner view (loads in background while splash is visible)
             TunerView()
-            
+
             // Splash screen overlay
             if showSplash {
                 SplashScreenView()

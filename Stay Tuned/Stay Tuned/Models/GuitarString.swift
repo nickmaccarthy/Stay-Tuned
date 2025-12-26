@@ -13,12 +13,12 @@ struct GuitarString: Identifiable, Hashable {
     let name: String
     let frequency: Double
     let octave: Int
-    
+
     /// The full note name including octave (e.g., "E2", "A2")
     var fullName: String {
         "\(name)\(octave)"
     }
-    
+
     /// String number for display (1 = high E, 6 = low E in standard notation)
     var stringNumber: Int {
         // Convert from array index to string number
@@ -26,6 +26,3 @@ struct GuitarString: Identifiable, Hashable {
         6 - id
     }
 }
-
-
-

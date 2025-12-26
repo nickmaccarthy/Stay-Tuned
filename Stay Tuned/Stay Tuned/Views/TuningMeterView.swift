@@ -13,30 +13,31 @@ struct TuningMeterView: View {
     let isInTune: Bool
     let selectedString: GuitarString?
     var showConfirmation: Bool = false
-    var sustainedInTune: Bool = false  // True when in tune for 2+ seconds
-    var detectedFrequency: Double = 0  // Current detected Hz
-    var targetFrequency: Double = 0  // Adjusted target Hz (accounts for reference pitch)
-    var currentDecibels: Float?  // Current dB level when detecting
-    var chromaticNote: ChromaticNote? = nil  // For chromatic mode
-    
+    var sustainedInTune: Bool = false // True when in tune for 2+ seconds
+    var detectedFrequency: Double = 0 // Current detected Hz
+    var targetFrequency: Double = 0 // Adjusted target Hz (accounts for reference pitch)
+    var currentDecibels: Float? // Current dB level when detecting
+    var chromaticNote: ChromaticNote? // For chromatic mode
+
     /// Animation state for the needle
-    @State private var animatedCents: Double = 0
-    
-    private let meterRange: ClosedRange<Int> = -50...50
+    @State
+    private var animatedCents: Double = 0
+
+    private let meterRange: ClosedRange<Int> = -50 ... 50
     private let tickCount = 25
-    
+
     var body: some View {
         VStack(spacing: 16) {
             // Status text - fixed height to prevent layout shift
             statusText
                 .frame(height: 60)
-            
+
             // Main meter
             meterView
-            
+
             // Cents display
             centsDisplay
-            
+
             // dB reading below cents - always reserve space to prevent layout shift
             Text(currentDecibels.map { String(format: "%.0f dB", $0) } ?? " ")
                 .font(.system(size: 12, weight: .medium, design: .monospaced))
@@ -49,7 +50,7 @@ struct TuningMeterView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     private var statusText: some View {
         if showConfirmation {
@@ -67,7 +68,7 @@ struct TuningMeterView: View {
                     Text(note.fullName)
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundColor(sustainedInTune ? .green : .white)
-                    
+
                     if sustainedInTune {
                         Text("In Tune")
                             .font(.system(size: 16, weight: .bold))
@@ -78,17 +79,17 @@ struct TuningMeterView: View {
                             .foregroundColor(Color(hex: "9a8aba"))
                     }
                 }
-                
+
                 // Hz reading for chromatic mode
                 HStack(spacing: 4) {
                     Text(String(format: "%.1f Hz", note.frequency))
                         .font(.system(size: 14, weight: .medium, design: .monospaced))
                         .foregroundColor(isInTune ? .green.opacity(0.9) : Color(hex: "b8a8d8"))
-                    
+
                     Text("→")
                         .font(.system(size: 12))
                         .foregroundColor(Color(hex: "9a8aba"))
-                    
+
                     Text(String(format: "%.1f Hz", note.targetFrequency))
                         .font(.system(size: 14, weight: .medium, design: .monospaced))
                         .foregroundColor(.green)
@@ -100,7 +101,7 @@ struct TuningMeterView: View {
                     Text(string.fullName)
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundColor(sustainedInTune ? .green : .white)
-                    
+
                     if sustainedInTune {
                         Text("In Tune")
                             .font(.system(size: 16, weight: .bold))
@@ -111,17 +112,17 @@ struct TuningMeterView: View {
                             .foregroundColor(Color(hex: "9a8aba"))
                     }
                 }
-                
+
                 // Hz reading - always reserve space to prevent layout shift
                 HStack(spacing: 4) {
                     Text(detectedFrequency > 0 ? String(format: "%.1f Hz", detectedFrequency) : "--- Hz")
                         .font(.system(size: 14, weight: .medium, design: .monospaced))
                         .foregroundColor(isInTune ? .green.opacity(0.9) : Color(hex: "b8a8d8"))
-                    
+
                     Text("→")
                         .font(.system(size: 12))
                         .foregroundColor(Color(hex: "9a8aba"))
-                    
+
                     // Use adjusted target frequency if provided, otherwise fall back to string.frequency
                     Text(String(format: "%.1f Hz", targetFrequency > 0 ? targetFrequency : string.frequency))
                         .font(.system(size: 14, weight: .medium, design: .monospaced))
@@ -135,47 +136,47 @@ struct TuningMeterView: View {
                 .foregroundColor(Color(hex: "9a8aba"))
         }
     }
-    
+
     private var meterView: some View {
         GeometryReader { geometry in
             let width = geometry.size.width
             let height = geometry.size.height
-            
+
             ZStack {
                 // Tick marks
                 HStack(spacing: 0) {
-                    ForEach(0..<tickCount, id: \.self) { index in
+                    ForEach(0 ..< tickCount, id: \.self) { index in
                         let isCenterTick = index == tickCount / 2
                         let isQuarterTick = index % (tickCount / 4) == 0
-                        
+
                         Rectangle()
                             .fill(tickColor(for: index))
                             .frame(
                                 width: isCenterTick ? 3 : 1.5,
                                 height: isCenterTick ? 50 : (isQuarterTick ? 35 : 20)
                             )
-                        
+
                         if index < tickCount - 1 {
                             Spacer()
                         }
                     }
                 }
                 .frame(width: width - 40)
-                
+
                 // Left and right boundary markers
                 HStack {
                     Rectangle()
                         .fill(Color(hex: "7c6c9a"))
                         .frame(width: 2, height: 60)
-                    
+
                     Spacer()
-                    
+
                     Rectangle()
                         .fill(Color(hex: "7c6c9a"))
                         .frame(width: 2, height: 60)
                 }
                 .frame(width: width)
-                
+
                 // Needle indicator
                 needleIndicator(width: width, height: height)
             }
@@ -184,11 +185,11 @@ struct TuningMeterView: View {
         .frame(height: 70)
         .padding(.horizontal, 20)
     }
-    
+
     private func tickColor(for index: Int) -> Color {
         let centerIndex = tickCount / 2
         let distanceFromCenter = abs(index - centerIndex)
-        
+
         // Center tick is brightest
         if distanceFromCenter == 0 {
             return .white
@@ -201,10 +202,10 @@ struct TuningMeterView: View {
             return Color(hex: "b8a8d8").opacity(1 - intensity * 0.5)
         }
     }
-    
+
     private func needleIndicator(width: CGFloat, height: CGFloat) -> some View {
         let meterWidth = width - 40
-        
+
         // Compress the visual range for in-tune readings (±5 cents)
         // This makes small deviations look more centered
         var displayCents = animatedCents
@@ -212,16 +213,16 @@ struct TuningMeterView: View {
             // Within ±5 cents: compress to ±2 visual range (feels more "locked in")
             displayCents *= 0.4
         }
-        
+
         let normalizedPosition = (displayCents + 50) / 100
         let xPosition = 20 + meterWidth * normalizedPosition
-        
+
         return VStack(spacing: 0) {
             // Needle line
             Rectangle()
                 .fill(needleColor)
                 .frame(width: 3, height: 55)
-            
+
             // Triangle pointer
             Triangle()
                 .fill(needleColor)
@@ -230,7 +231,7 @@ struct TuningMeterView: View {
         .shadow(color: needleColor.opacity(0.6), radius: 4)
         .position(x: xPosition, y: height / 2)
     }
-    
+
     private var needleColor: Color {
         if showConfirmation || isInTune {
             return .green
@@ -245,7 +246,7 @@ struct TuningMeterView: View {
             }
         }
     }
-    
+
     private var centsDisplay: some View {
         HStack {
             if showConfirmation {
@@ -318,7 +319,7 @@ struct Triangle: Shape {
     ZStack {
         Color(hex: "1a0a2e")
             .ignoresSafeArea()
-        
+
         VStack(spacing: 40) {
             TuningMeterView(
                 centsDeviation: 0,
@@ -326,13 +327,13 @@ struct Triangle: Shape {
                 selectedString: Tuning.standard.strings[2],
                 showConfirmation: true
             )
-            
+
             TuningMeterView(
                 centsDeviation: 18,
                 isInTune: false,
                 selectedString: Tuning.standard.strings[0]
             )
-            
+
             TuningMeterView(
                 centsDeviation: -25,
                 isInTune: false,

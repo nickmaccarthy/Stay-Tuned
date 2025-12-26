@@ -9,16 +9,22 @@ import SwiftUI
 
 /// Main metronome view presented as a sheet
 struct MetronomeView: View {
-    @StateObject private var viewModel = MetronomeViewModel()
-    @Environment(\.dismiss) private var dismiss
-    
-    @State private var tempoInputText = ""
-    @State private var originalTempo: Double = 120
-    @FocusState private var isTempoFieldFocused: Bool
-    
+    @StateObject
+    private var viewModel = MetronomeViewModel()
+    @Environment(\.dismiss)
+    private var dismiss
+
+    @State
+    private var tempoInputText = ""
+    @State
+    private var originalTempo: Double = 120
+    @FocusState
+    private var isTempoFieldFocused: Bool
+
     // For continuous +/- repeat
-    @State private var repeatTimer: Timer?
-    
+    @State
+    private var repeatTimer: Timer?
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -27,48 +33,48 @@ struct MetronomeView: View {
                     colors: [
                         Color(hex: "1a0a2e"),
                         Color(hex: "2d1b4e"),
-                        Color(hex: "1a0a2e")
+                        Color(hex: "1a0a2e"),
                     ],
                     startPoint: .top,
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
-                
+
                 VStack(spacing: 0) {
                     // Animated metronome icon
                     animatedIconSection
                         .padding(.top, 20)
-                    
+
                     Spacer()
                         .frame(height: 30)
-                    
+
                     // Tempo display
                     tempoDisplaySection
-                    
+
                     Spacer()
                         .frame(height: 24)
-                    
+
                     // Tempo slider
                     tempoSliderSection
-                    
+
                     Spacer()
                         .frame(height: 32)
-                    
+
                     // Beat indicators
                     beatIndicatorSection
-                    
+
                     Spacer()
                         .frame(height: 32)
-                    
+
                     // Play/Stop button
                     playButtonSection
-                    
+
                     Spacer()
                         .frame(height: 24)
-                    
+
                     // Time signature and tap tempo
                     controlsSection
-                    
+
                     Spacer()
                 }
                 .padding(.horizontal, 24)
@@ -91,9 +97,9 @@ struct MetronomeView: View {
             viewModel.stop()
         }
     }
-    
+
     // MARK: - Animated Icon Section
-    
+
     private var animatedIconSection: some View {
         AnimatedMetronomeIcon(
             isAnimating: viewModel.isPlaying,
@@ -103,9 +109,9 @@ struct MetronomeView: View {
             color: viewModel.isPlaying ? Color(hex: "4ECDC4") : Color(hex: "9a8aba")
         )
     }
-    
+
     // MARK: - Tempo Display Section
-    
+
     private var tempoDisplaySection: some View {
         VStack(spacing: 16) {
             // Large tempo number - tappable for direct input
@@ -113,11 +119,11 @@ struct MetronomeView: View {
                 Text("♩")
                     .font(.system(size: 32, weight: .light))
                     .foregroundColor(Color(hex: "9a8aba"))
-                
+
                 Text("=")
                     .font(.system(size: 28, weight: .light))
                     .foregroundColor(Color(hex: "7c6c9a"))
-                
+
                 // Inline editable tempo field
                 ZStack {
                     // TextField for input (visible when editing)
@@ -148,9 +154,9 @@ struct MetronomeView: View {
                                     isTempoFieldFocused = false
                                 }
                                 .foregroundColor(Color(hex: "9a8aba"))
-                                
+
                                 Spacer()
-                                
+
                                 Button("Set") {
                                     applyTempoInput()
                                 }
@@ -158,7 +164,7 @@ struct MetronomeView: View {
                                 .foregroundColor(Color(hex: "4ECDC4"))
                             }
                         }
-                    
+
                     // Display text (shown when not editing)
                     if !isTempoFieldFocused {
                         Text("\(Int(viewModel.tempo))")
@@ -173,7 +179,7 @@ struct MetronomeView: View {
                     }
                 }
             }
-            
+
             // +/- Buttons with continuous repeat on long press
             HStack(spacing: 24) {
                 // Minus button
@@ -194,7 +200,7 @@ struct MetronomeView: View {
                                 stopRepeating()
                             }
                     )
-                
+
                 // Plus button
                 Image(systemName: "plus")
                     .font(.system(size: 20, weight: .semibold))
@@ -216,20 +222,20 @@ struct MetronomeView: View {
             }
         }
     }
-    
+
     // MARK: - Repeat Timer Methods
-    
+
     private func startRepeating(increment: Bool) {
         // Only start if not already running
         guard repeatTimer == nil else { return }
-        
+
         // Immediate first action (single step of 1)
         if increment {
             viewModel.incrementTempo()
         } else {
             viewModel.decrementTempo()
         }
-        
+
         // After 1.5 second delay, start repeating every 150ms with +/- 5
         repeatTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [self] _ in
             // Start the fast repeat timer
@@ -242,12 +248,12 @@ struct MetronomeView: View {
             }
         }
     }
-    
+
     private func stopRepeating() {
         repeatTimer?.invalidate()
         repeatTimer = nil
     }
-    
+
     private func applyTempoInput() {
         if let newTempo = Double(tempoInputText), newTempo >= 40, newTempo <= 240 {
             viewModel.tempo = newTempo
@@ -255,21 +261,21 @@ struct MetronomeView: View {
         // If input is empty or invalid, keep original tempo
         isTempoFieldFocused = false
     }
-    
+
     // MARK: - Tempo Slider Section
-    
+
     private var tempoSliderSection: some View {
         VStack(spacing: 8) {
-            Slider(value: $viewModel.tempo, in: 40...240, step: 1)
+            Slider(value: $viewModel.tempo, in: 40 ... 240, step: 1)
                 .tint(Color(hex: "4ECDC4"))
-            
+
             HStack {
                 Text("40")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Color(hex: "7c6c9a"))
-                
+
                 Spacer()
-                
+
                 Text("240")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Color(hex: "7c6c9a"))
@@ -277,12 +283,12 @@ struct MetronomeView: View {
         }
         .padding(.horizontal, 8)
     }
-    
+
     // MARK: - Beat Indicator Section
-    
+
     private var beatIndicatorSection: some View {
         HStack(spacing: 16) {
-            ForEach(1...viewModel.timeSignature.beatsPerMeasure, id: \.self) { beat in
+            ForEach(1 ... viewModel.timeSignature.beatsPerMeasure, id: \.self) { beat in
                 BeatDot(
                     isActive: viewModel.isPlaying && viewModel.currentBeat == beat,
                     isAccent: beat == 1,
@@ -292,9 +298,9 @@ struct MetronomeView: View {
         }
         .animation(.easeInOut(duration: 0.1), value: viewModel.currentBeat)
     }
-    
+
     // MARK: - Play Button Section
-    
+
     private var playButtonSection: some View {
         Button {
             viewModel.togglePlayback()
@@ -302,7 +308,7 @@ struct MetronomeView: View {
             HStack(spacing: 12) {
                 Image(systemName: viewModel.isPlaying ? "stop.fill" : "play.fill")
                     .font(.system(size: 22, weight: .semibold))
-                
+
                 Text(viewModel.isPlaying ? "STOP" : "START")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
             }
@@ -321,9 +327,9 @@ struct MetronomeView: View {
         .buttonStyle(.plain)
         .animation(.easeInOut(duration: 0.2), value: viewModel.isPlaying)
     }
-    
+
     // MARK: - Controls Section
-    
+
     private var controlsSection: some View {
         HStack(spacing: 16) {
             // Time signature picker
@@ -345,7 +351,7 @@ struct MetronomeView: View {
                     Text(viewModel.timeSignature.displayName)
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundColor(.white)
-                    
+
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Color(hex: "9a8aba"))
@@ -357,9 +363,9 @@ struct MetronomeView: View {
                         .fill(Color.white.opacity(0.08))
                 )
             }
-            
+
             Spacer()
-            
+
             // Tap tempo button
             Button {
                 viewModel.tap()
@@ -367,7 +373,7 @@ struct MetronomeView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "hand.tap.fill")
                         .font(.system(size: 16, weight: .medium))
-                    
+
                     Text("Tap")
                         .font(.system(size: 16, weight: .semibold))
                 }
@@ -390,7 +396,7 @@ struct BeatDot: View {
     let isActive: Bool
     let isAccent: Bool
     let isPlaying: Bool
-    
+
     var body: some View {
         Circle()
             .fill(dotColor)
@@ -402,26 +408,26 @@ struct BeatDot: View {
             .scaleEffect(isActive ? 1.3 : 1.0)
             .animation(.spring(response: 0.15, dampingFraction: 0.6), value: isActive)
     }
-    
+
     private var dotSize: CGFloat {
         isAccent ? 20 : 16
     }
-    
+
     private var dotColor: Color {
         if isActive {
-            return isAccent ? Color(hex: "4ECDC4") : Color.white
+            isAccent ? Color(hex: "4ECDC4") : Color.white
         } else {
-            return Color.white.opacity(0.1)
+            Color.white.opacity(0.1)
         }
     }
-    
+
     private var strokeColor: Color {
         if isActive {
-            return .clear
+            .clear
         } else if isAccent {
-            return Color(hex: "4ECDC4").opacity(0.5)
+            Color(hex: "4ECDC4").opacity(0.5)
         } else {
-            return Color.white.opacity(0.3)
+            Color.white.opacity(0.3)
         }
     }
 }
@@ -429,4 +435,3 @@ struct BeatDot: View {
 #Preview {
     MetronomeView()
 }
-
