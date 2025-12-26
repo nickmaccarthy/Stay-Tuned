@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Stay Tuned</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gradient-start: #1a1a2e;
+            --gradient-mid: #16213e;
+            --gradient-end: #0f0f1a;
+            --accent-cyan: #00d4ff;
+            --accent-magenta: #ff006e;
+            --accent-gold: #ffd166;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-mid) 50%, var(--gradient-end) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .bg-orbs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 350px;
+            height: 350px;
+            background: var(--accent-cyan);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 280px;
+            height: 280px;
+            background: var(--accent-magenta);
+            bottom: -80px;
+            right: -80px;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.1); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(20px, 10px) scale(1.05); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            margin-bottom: 32px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--accent-cyan);
+        }
+
+        header {
+            margin-bottom: 48px;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 32px;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--accent-cyan);
+        }
+
+        p {
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        p:last-child {
+            margin-bottom: 0;
+        }
+
+        ul {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            padding-left: 24px;
+            margin-bottom: 16px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight-box {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .highlight-box p {
+            color: var(--text-primary);
+            margin-bottom: 0;
+        }
+
+        strong {
+            color: var(--text-primary);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 40px 16px;
+            }
+            
+            .glass-card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+
+        <header>
+            <h1>Privacy Policy</h1>
+            <p class="last-updated">Last Updated: December 26, 2025</p>
+        </header>
+
+        <div class="glass-card">
+            <h2>Our Commitment to Privacy</h2>
+            <p>
+                Stay Tuned is designed with your privacy as a priority. We believe that a guitar tuner 
+                should do one thing exceptionally well: help you tune your instrument. That's why we've 
+                built our app to work entirely on your device, without collecting any personal data.
+            </p>
+            <div class="highlight-box">
+                <p><strong>🔒 Simple Privacy Promise:</strong> Stay Tuned does not collect, store, transmit, 
+                or share any personal information. Your audio never leaves your device.</p>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h2>Microphone Access</h2>
+            <p>
+                Stay Tuned requires access to your device's microphone to detect the pitch of your 
+                instrument. This is essential for the core tuning functionality.
+            </p>
+            <p><strong>How we use microphone access:</strong></p>
+            <ul>
+                <li>Audio is processed in real-time, entirely on your device</li>
+                <li>No audio recordings are created or stored</li>
+                <li>Audio data is never transmitted to any server</li>
+                <li>Microphone access is only active when the app is open and in use</li>
+            </ul>
+        </div>
+
+        <div class="glass-card">
+            <h2>Data Collection</h2>
+            <p><strong>We do NOT collect:</strong></p>
+            <ul>
+                <li>Personal information (name, email, phone number, etc.)</li>
+                <li>Audio recordings or microphone data</li>
+                <li>Location data</li>
+                <li>Device identifiers</li>
+                <li>Usage analytics or behavioral data</li>
+                <li>Any information that could identify you</li>
+            </ul>
+        </div>
+
+        <div class="glass-card">
+            <h2>Local Storage</h2>
+            <p>
+                Stay Tuned stores your preferences (such as your preferred reference pitch and last 
+                selected tuning) locally on your device using iOS's standard storage mechanisms. 
+                This data:
+            </p>
+            <ul>
+                <li>Never leaves your device</li>
+                <li>Is not accessible to us or any third party</li>
+                <li>Is deleted when you uninstall the app</li>
+            </ul>
+        </div>
+
+        <div class="glass-card">
+            <h2>Third-Party Services</h2>
+            <p>
+                Stay Tuned does not integrate with any third-party analytics, advertising, or 
+                tracking services. The app does not contain any ads.
+            </p>
+            <p>
+                If you choose to make a tip through our Tip Jar feature, you'll be redirected to 
+                external payment services (Venmo, Cash App, or PayPal). These services have their 
+                own privacy policies, and we encourage you to review them.
+            </p>
+        </div>
+
+        <div class="glass-card">
+            <h2>Children's Privacy</h2>
+            <p>
+                Stay Tuned does not collect any personal information from anyone, including children 
+                under the age of 13. The app is safe for users of all ages.
+            </p>
+        </div>
+
+        <div class="glass-card">
+            <h2>Changes to This Policy</h2>
+            <p>
+                If we ever make changes to this privacy policy, we will update the "Last Updated" 
+                date at the top of this page. Given our commitment to not collecting data, we do 
+                not anticipate significant changes.
+            </p>
+        </div>
+
+        <div class="glass-card">
+            <h2>Contact Us</h2>
+            <p>
+                If you have any questions about this privacy policy or our privacy practices, 
+                please reach out through our <a href="support.html" style="color: var(--accent-cyan);">Support page</a>.
+            </p>
+        </div>
+
+        <footer>
+            <p><a href="index.html">Stay Tuned</a> · <a href="support.html">Support</a></p>
+            <p style="margin-top: 8px;">&copy; 2025 Stay Tuned. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
+

@@ -51,6 +51,11 @@ If you change these values, update the tests in `SpectrumSensitivityTests` to ma
 ## Project Structure
 
 ```
+docs/                           # GitHub Pages - App Store required pages
+├── index.html                  # Landing page with features
+├── privacy.html                # Privacy Policy
+└── support.html                # Support & FAQ
+
 Stay Tuned/
 ├── Models/
 │   ├── GuitarString.swift      # String model (id, name, frequency, octave)
@@ -148,6 +153,40 @@ Settings are organized under `SettingsView.swift`, which acts as a **settings hu
 
 - Microphone usage description is set in build settings (not Info.plist)
 - No custom Info.plist file - removed to avoid build conflicts
+
+## Documentation & App Store Pages
+
+The `/docs` folder contains static web pages for GitHub Pages hosting. These are required for App Store submission.
+
+### Pages
+
+| Page | Purpose | URL (when published) |
+|------|---------|---------------------|
+| `docs/index.html` | Main landing/documentation page | `https://[username].github.io/stay-tuned/` |
+| `docs/privacy.html` | Privacy Policy for App Store | `https://[username].github.io/stay-tuned/privacy.html` |
+| `docs/support.html` | Support page with FAQ and contact | `https://[username].github.io/stay-tuned/support.html` |
+
+### ⚠️ KEEP DOCS UPDATED
+
+**When adding or removing features, update the docs pages:**
+
+1. **`docs/index.html`** - Update the features grid if adding new major features
+2. **`docs/support.html`** - Update FAQ section for new features or changed behavior
+3. **`docs/privacy.html`** - Update if data collection practices change (currently: none)
+
+### Publishing to GitHub Pages
+
+1. Push the `/docs` folder to the `main` branch
+2. In GitHub repo settings → Pages → Set source to "Deploy from branch"
+3. Select `main` branch and `/docs` folder
+4. Pages will be available at `https://[username].github.io/stay-tuned/`
+
+### Design Notes
+
+- Uses glassmorphism aesthetic matching the app's UI
+- Fonts: DM Sans (body), Outfit (headings)
+- Color scheme: Dark gradient with cyan/magenta/gold accents
+- Responsive design for mobile and desktop
 
 ## Payment Links (Tip Jar)
 

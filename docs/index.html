@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stay Tuned - Professional Guitar Tuner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gradient-start: #1a1a2e;
+            --gradient-mid: #16213e;
+            --gradient-end: #0f0f1a;
+            --accent-cyan: #00d4ff;
+            --accent-magenta: #ff006e;
+            --accent-gold: #ffd166;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-mid) 50%, var(--gradient-end) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .bg-orbs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-cyan);
+            top: -100px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent-magenta);
+            bottom: -50px;
+            left: -50px;
+            animation-delay: -7s;
+        }
+
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            background: var(--accent-gold);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -14s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.1); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(20px, 10px) scale(1.05); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.3);
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 32px;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--accent-cyan);
+        }
+
+        p {
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .feature {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 212, 255, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .feature h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature p {
+            font-size: 0.95rem;
+            margin-bottom: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 48px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 12px 28px;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(0, 212, 255, 0.15);
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        .app-store-badge {
+            display: inline-block;
+            margin-top: 32px;
+        }
+
+        .app-store-badge img {
+            height: 50px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .container {
+                padding: 40px 16px;
+            }
+            
+            .glass-card {
+                padding: 24px;
+            }
+            
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <img src="https://raw.githubusercontent.com/nickmaccarthy/stay-tuned/main/app-logo.png" alt="Stay Tuned Logo" class="logo">
+            <h1>Stay Tuned</h1>
+            <p class="tagline">Professional Guitar Tuner for iOS</p>
+        </header>
+
+        <div class="glass-card">
+            <h2>About the App</h2>
+            <p>
+                Stay Tuned is a professional-grade guitar tuner built for musicians who demand precision and beauty. 
+                Featuring a stunning glassmorphism interface, real-time pitch detection powered by advanced signal processing, 
+                and support for multiple instruments and tunings.
+            </p>
+            <p>
+                Whether you're a beginner learning your first chords or a professional preparing for a gig, 
+                Stay Tuned provides the accuracy and reliability you need to sound your best.
+            </p>
+        </div>
+
+        <div class="glass-card">
+            <h2>Features</h2>
+            <div class="features-grid">
+                <div class="feature">
+                    <div class="feature-icon">🎸</div>
+                    <h3>Precision Tuning</h3>
+                    <p>YIN-based pitch detection with sub-cent accuracy for perfect intonation every time.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎵</div>
+                    <h3>Chromatic Mode</h3>
+                    <p>Detect any note in the chromatic scale - perfect for all instruments.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎼</div>
+                    <h3>Multiple Tunings</h3>
+                    <p>Standard, Drop D, DADGAD, Open tunings, and many more presets included.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⏱️</div>
+                    <h3>Built-in Metronome</h3>
+                    <p>Practice with precision timing using our visual and audio metronome.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔊</div>
+                    <h3>Tone Generator</h3>
+                    <p>Generate reference tones to tune by ear with multiple waveform options.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h3>Spectrum Analyzer</h3>
+                    <p>Visualize the audio spectrum in real-time with our beautiful analyzer.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h2>Technical Specifications</h2>
+            <p><strong>Frequency Range:</strong> 30 Hz - 4000 Hz (covers all standard instruments)</p>
+            <p><strong>Reference Pitch:</strong> Adjustable from 432 Hz to 444 Hz (default A4 = 440 Hz)</p>
+            <p><strong>In-Tune Tolerance:</strong> ±7 cents with visual confirmation</p>
+            <p><strong>Compatibility:</strong> iOS 17.0+ (iPhone and iPad)</p>
+        </div>
+
+        <nav class="nav-links">
+            <a href="privacy.html" class="nav-link">Privacy Policy</a>
+            <a href="support.html" class="nav-link">Support</a>
+            <a href="https://github.com/nickmaccarthy/stay-tuned" class="nav-link">GitHub</a>
+        </nav>
+
+        <footer>
+            <p>&copy; 2025 Stay Tuned. All rights reserved.</p>
+            <p style="margin-top: 8px;">
+                Made with ♥ for musicians everywhere
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
+

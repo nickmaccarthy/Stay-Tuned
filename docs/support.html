@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support - Stay Tuned</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gradient-start: #1a1a2e;
+            --gradient-mid: #16213e;
+            --gradient-end: #0f0f1a;
+            --accent-cyan: #00d4ff;
+            --accent-magenta: #ff006e;
+            --accent-gold: #ffd166;
+            --accent-green: #06d6a0;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-mid) 50%, var(--gradient-end) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .bg-orbs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 350px;
+            height: 350px;
+            background: var(--accent-green);
+            top: 20%;
+            right: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 280px;
+            height: 280px;
+            background: var(--accent-gold);
+            bottom: 10%;
+            left: -80px;
+            animation-delay: -8s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.1); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(20px, 10px) scale(1.05); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            margin-bottom: 32px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--accent-cyan);
+        }
+
+        header {
+            margin-bottom: 48px;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 32px;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--accent-cyan);
+        }
+
+        h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        p {
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .contact-card {
+            background: rgba(6, 214, 160, 0.1);
+            border: 1px solid rgba(6, 214, 160, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .contact-card p {
+            margin-bottom: 16px;
+        }
+
+        .contact-email {
+            display: inline-block;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            font-weight: 500;
+            text-decoration: none;
+            padding: 12px 28px;
+            background: var(--glass-bg);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-email:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--glass-border);
+            padding: 20px 0;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .faq-item:first-child {
+            padding-top: 0;
+        }
+
+        .faq-question {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .faq-answer {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        .tip-section {
+            background: linear-gradient(135deg, rgba(255, 0, 110, 0.1), rgba(0, 212, 255, 0.1));
+            border: 1px solid rgba(255, 0, 110, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .tip-section p {
+            margin-bottom: 16px;
+        }
+
+        .tip-links {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .tip-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 10px 20px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .tip-link:hover {
+            background: rgba(255, 0, 110, 0.2);
+            border-color: var(--accent-magenta);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 40px 16px;
+            }
+            
+            .glass-card {
+                padding: 24px;
+            }
+            
+            .tip-links {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+
+        <header>
+            <h1>Support</h1>
+            <p class="subtitle">We're here to help you stay in tune</p>
+        </header>
+
+        <div class="glass-card">
+            <h2>Contact Us</h2>
+            <div class="contact-card">
+                <p>Have a question, suggestion, or found a bug? We'd love to hear from you!</p>
+                <a href="mailto:staytuned@nickmaccarthy.com" class="contact-email">staytuned@nickmaccarthy.com</a>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h2>Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">Why isn't the tuner detecting my instrument?</div>
+                <p class="faq-answer">
+                    Make sure you've granted microphone permission to Stay Tuned in your device's Settings. 
+                    Also, try playing your instrument closer to your device's microphone and ensure you're 
+                    in a relatively quiet environment.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">What's the difference between auto and manual mode?</div>
+                <p class="faq-answer">
+                    In auto mode, Stay Tuned automatically detects which string you're playing and shows 
+                    how in-tune it is. In manual mode, you tap on a specific tuning peg to tell the app 
+                    which string you want to tune.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">How do I change the reference pitch (A=440 Hz)?</div>
+                <p class="faq-answer">
+                    Go to Settings (tap the gear icon) and select "Reference Pitch." You can adjust the 
+                    reference frequency from 432 Hz to 444 Hz to match your ensemble or preference.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">What tunings are available?</div>
+                <p class="faq-answer">
+                    Stay Tuned includes Standard, Half Step Down, Whole Step Down, Drop D, DADGAD, 
+                    and many open tunings (Open G, D, C, E, A, and B). Tap the tuning name at the top 
+                    of the screen to browse all available tunings.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">What does "chromatic mode" do?</div>
+                <p class="faq-answer">
+                    Chromatic mode detects any note in the chromatic scale (all 12 notes), not just the 
+                    notes of your selected tuning. This is useful for tuning other instruments or checking 
+                    intonation anywhere on the fretboard.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">How accurate is the tuner?</div>
+                <p class="faq-answer">
+                    Stay Tuned uses a professional-grade YIN algorithm with sub-cent accuracy. The app 
+                    considers a string "in tune" when it's within ±7 cents of the target pitch, which is 
+                    within the threshold of human perception.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Does the app work offline?</div>
+                <p class="faq-answer">
+                    Yes! Stay Tuned works completely offline. All audio processing happens on your device, 
+                    and no internet connection is required.
+                </p>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h2>Tips for Best Results</h2>
+            <p>
+                <strong>🎸 One string at a time:</strong> Pluck strings individually and let them ring 
+                for best detection accuracy.
+            </p>
+            <p>
+                <strong>🔇 Quiet environment:</strong> Background noise can interfere with pitch detection. 
+                Find a quiet spot for the most accurate results.
+            </p>
+            <p>
+                <strong>📱 Microphone proximity:</strong> Hold your device's microphone relatively close 
+                to your instrument (within 1-2 feet).
+            </p>
+            <p>
+                <strong>🎵 Fresh strings:</strong> Old strings can have intonation issues and may not 
+                hold their pitch well. If you're having trouble, it might be time for new strings!
+            </p>
+        </div>
+
+        <div class="glass-card">
+            <h2>Support the App</h2>
+            <p>
+                Stay Tuned is a labor of love, created for musicians by a musician. If you enjoy the app 
+                and want to support continued development, consider leaving a tip!
+            </p>
+            <div class="tip-section">
+                <p>Your support helps keep Stay Tuned ad-free and constantly improving.</p>
+                <div class="tip-links">
+                    <a href="https://venmo.com/NickMacCarthy" class="tip-link" target="_blank" rel="noopener">Venmo</a>
+                    <a href="https://cash.app/$NickMacCarthy" class="tip-link" target="_blank" rel="noopener">Cash App</a>
+                    <a href="https://paypal.me/nickmaccarthy" class="tip-link" target="_blank" rel="noopener">PayPal</a>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p><a href="index.html">Stay Tuned</a> · <a href="privacy.html">Privacy Policy</a></p>
+            <p style="margin-top: 8px;">&copy; 2025 Stay Tuned. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
+
