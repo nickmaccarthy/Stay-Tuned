@@ -34,9 +34,16 @@
 
 ## 📱 Screenshots
 
-<!-- Add your screenshots here -->
 <p align="center">
-  <em>Screenshots coming soon</em>
+  <img src="screenshots/standard-tuning.png" alt="Standard Tuning" width="250">
+  &nbsp;&nbsp;
+  <img src="screenshots/chromatic-tuner.png" alt="Chromatic Tuner" width="250">
+  &nbsp;&nbsp;
+  <img src="screenshots/metronome.png" alt="Metronome" width="250">
+</p>
+
+<p align="center">
+  <em>Standard Tuning • Chromatic Mode • Metronome</em>
 </p>
 
 ## 🛠 Tech Stack
@@ -62,7 +69,7 @@
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/stay-tuned.git
+   git clone https://github.com/nickmaccarthy/Stay-Tuned.git
    cd stay-tuned
    ```
 
