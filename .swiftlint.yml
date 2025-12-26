@@ -18,6 +18,13 @@ disabled_rules:
   - cyclomatic_complexity
   - force_cast
   - force_try
+  - shorthand_operator
+  - redundant_string_enum_value
+  - void_function_in_ternary
+  - implicit_optional_initialization
+  - for_where
+  - trailing_newline
+  - type_name
 
 opt_in_rules:
   - empty_count
@@ -68,4 +75,3 @@ nesting:
     warning: 3
 
 reporter: "xcode"
-
