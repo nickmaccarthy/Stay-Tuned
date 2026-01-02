@@ -23,8 +23,19 @@ final class ToneGenerator {
     private(set) var isPlaying = false
     private(set) var currentFrequency: Double = 0
 
+    /// Controls whether sound is generated (engine stays running for instant playback)
+    private var shouldGenerateSound = false
+
     /// The current tone type (sine or string)
-    var toneType: ToneType = .string
+    var toneType: ToneType = .string {
+        didSet {
+            // Store for audio thread access
+            currentToneTypeIsSine = (toneType == .sine)
+        }
+    }
+
+    /// Thread-safe copy of tone type for audio callback
+    private var currentToneTypeIsSine = false
 
     // Sine wave phase
     private var sinePhase: Double = 0
@@ -45,9 +56,6 @@ final class ToneGenerator {
 
     /// Harmonic amplitudes for enriched sine wave (relative to fundamental)
     /// These overtones make low frequencies audible on phone speakers
-    // let sineHarmonic2Amplitude: Float = 0.5   // 2nd harmonic (octave above)
-    // let sineHarmonic3Amplitude: Float = 0.35  // 3rd harmonic
-    // let sineHarmonic4Amplitude: Float = 0.25  // 4th harmonic (2 octaves above)
     let sineHarmonic2Amplitude: Float = 1 // 2nd harmonic (octave above)
     let sineHarmonic3Amplitude: Float = 0.70 // 3rd harmonic
     let sineHarmonic4Amplitude: Float = 0.50 // 4th harmonic (2 octaves above)
@@ -122,7 +130,25 @@ final class ToneGenerator {
     /// Store sample rate for calculations
     private var sampleRate: Double = 48000
 
+    /// Whether the engine has been prepared
+    private var isEnginePrepared = false
+
     // MARK: - Public Methods
+
+    /// Pre-initialize the audio engine for instant playback
+    /// Call this early (e.g., in TunerViewModel.init) to eliminate startup delay
+    func prepareEngine() {
+        guard !isEnginePrepared else { return }
+
+        setupAudioEngine()
+
+        do {
+            try audioEngine?.start()
+            isEnginePrepared = true
+        } catch {
+            print("ToneGenerator: Failed to prepare engine - \(error.localizedDescription)")
+        }
+    }
 
     /// Start playing a tone at the specified frequency
     /// If already playing the same note with string type, "re-pluck" by refilling the buffer
@@ -135,11 +161,12 @@ final class ToneGenerator {
 
         // Cancel fade out if in progress
         if isFadingOut {
-            stopImmediate()
+            // Just reset the fade state, don't stop engine
+            isFadingOut = false
+            fadeOutGain = 1.0
         }
 
         currentFrequency = frequency
-        isFadingOut = false
         fadeOutGain = 1.0
         sinePhase = 0
         sineEnvelopeGain = 0
@@ -149,15 +176,19 @@ final class ToneGenerator {
         lowFreqHarmonicPhase3x = 0
         lowFreqHarmonicPhase4x = 0
 
-        setupAudioEngine()
-
-        do {
-            try audioEngine?.start()
-            isPlaying = true
-        } catch {
-            print("ToneGenerator: Failed to start - \(error.localizedDescription)")
-            isPlaying = false
+        // Ensure engine is prepared (first time or if stopped)
+        if !isEnginePrepared {
+            prepareEngine()
         }
+
+        // Initialize delay buffer for string synthesis
+        if toneType == .string {
+            initializeDelayBuffer(for: frequency, sampleRate: sampleRate)
+        }
+
+        // Start generating sound immediately
+        shouldGenerateSound = true
+        isPlaying = true
     }
 
     /// Stop playing with smooth fade out
@@ -167,7 +198,7 @@ final class ToneGenerator {
         isFadingOut = true
         sineEnvelopeTarget = 0
 
-        // Poll until amplitude reaches zero, then stop
+        // Poll until amplitude reaches zero, then stop generating
         checkAndStop()
     }
 
@@ -231,9 +262,9 @@ final class ToneGenerator {
         guard isFadingOut else { return }
 
         // Check if fade out is complete
-        let fadeComplete = toneType == .sine ? sineEnvelopeGain <= 0.001 : fadeOutGain <= 0.001
+        let fadeComplete = currentToneTypeIsSine ? sineEnvelopeGain <= 0.001 : fadeOutGain <= 0.001
         if fadeComplete {
-            stopImmediate()
+            stopGenerating()
         } else {
             // Check again shortly
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) { [weak self] in
@@ -242,11 +273,31 @@ final class ToneGenerator {
         }
     }
 
+    /// Stop generating sound but keep engine running for instant restart
+    private func stopGenerating() {
+        shouldGenerateSound = false
+        isPlaying = false
+        isFadingOut = false
+        fadeOutGain = 1.0
+        sineEnvelopeGain = 0
+        sineEnvelopeTarget = 1.0
+        delayBuffer.removeAll()
+        bufferIndex = 0
+        sinePhase = 0
+        bodyResonanceState = 0
+        lowFreqHarmonicPhase2x = 0
+        lowFreqHarmonicPhase3x = 0
+        lowFreqHarmonicPhase4x = 0
+    }
+
+    /// Fully stop and tear down the audio engine
     private func stopImmediate() {
+        shouldGenerateSound = false
         audioEngine?.stop()
         sourceNode = nil
         audioEngine = nil
         isPlaying = false
+        isEnginePrepared = false
         isFadingOut = false
         fadeOutGain = 1.0
         sineEnvelopeGain = 0
@@ -280,21 +331,25 @@ final class ToneGenerator {
         let outputFormat = mainMixer.outputFormat(forBus: 0)
         sampleRate = outputFormat.sampleRate
 
-        // Initialize based on tone type
-        if toneType == .string {
-            initializeDelayBuffer(for: currentFrequency, sampleRate: sampleRate)
-        }
-
-        // Capture tone type to avoid accessing self.toneType in audio thread
-        let useSineWave = toneType == .sine
-
         // Create source node for real-time synthesis
+        // The callback checks shouldGenerateSound and currentToneTypeIsSine dynamically
         sourceNode = AVAudioSourceNode { [weak self] _, _, frameCount, audioBufferList -> OSStatus in
             guard let self else { return noErr }
 
             let ablPointer = UnsafeMutableAudioBufferListPointer(audioBufferList)
 
-            if useSineWave {
+            // Output silence if not generating sound
+            guard self.shouldGenerateSound else {
+                for buffer in ablPointer {
+                    let buf: UnsafeMutableBufferPointer<Float> = UnsafeMutableBufferPointer(buffer)
+                    for frame in 0 ..< Int(frameCount) {
+                        buf[frame] = 0
+                    }
+                }
+                return noErr
+            }
+
+            if self.currentToneTypeIsSine {
                 // Sine wave synthesis with harmonics
                 self.generateSineWave(frameCount: frameCount, ablPointer: ablPointer)
             } else {
@@ -370,7 +425,16 @@ final class ToneGenerator {
     // MARK: - Karplus-Strong Generation
 
     private func generateKarplusStrong(frameCount: UInt32, ablPointer: UnsafeMutableAudioBufferListPointer) {
-        guard !delayBuffer.isEmpty else { return }
+        guard !delayBuffer.isEmpty else {
+            // Output silence if buffer not initialized
+            for buffer in ablPointer {
+                let buf: UnsafeMutableBufferPointer<Float> = UnsafeMutableBufferPointer(buffer)
+                for frame in 0 ..< Int(frameCount) {
+                    buf[frame] = 0
+                }
+            }
+            return
+        }
 
         let bufferSize = delayBuffer.count
         let twoPi = 2.0 * Double.pi
