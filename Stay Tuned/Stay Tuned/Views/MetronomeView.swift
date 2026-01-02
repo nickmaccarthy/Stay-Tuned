@@ -287,16 +287,41 @@ struct MetronomeView: View {
     // MARK: - Beat Indicator Section
 
     private var beatIndicatorSection: some View {
-        HStack(spacing: 16) {
-            ForEach(1 ... viewModel.timeSignature.beatsPerMeasure, id: \.self) { beat in
-                BeatDot(
-                    isActive: viewModel.isPlaying && viewModel.currentBeat == beat,
-                    isAccent: beat == 1,
-                    isPlaying: viewModel.isPlaying
-                )
+        HStack(spacing: 0) {
+            let groups = viewModel.selectedGrouping.groups
+            let accentPositions = viewModel.selectedGrouping.accentPositions
+
+            ForEach(Array(groups.enumerated()), id: \.offset) { groupIndex, groupSize in
+                // Add separator between groups (not before first group)
+                if groupIndex > 0 {
+                    GroupSeparator()
+                }
+
+                // Dots for this group
+                HStack(spacing: 12) {
+                    ForEach(0 ..< groupSize, id: \.self) { beatInGroup in
+                        let absoluteBeat = calculateAbsoluteBeat(groupIndex: groupIndex, beatInGroup: beatInGroup)
+                        BeatDot(
+                            isActive: viewModel.isPlaying && viewModel.currentBeat == absoluteBeat,
+                            isAccent: accentPositions.contains(absoluteBeat),
+                            isPlaying: viewModel.isPlaying
+                        )
+                    }
+                }
             }
         }
         .animation(.easeInOut(duration: 0.1), value: viewModel.currentBeat)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.selectedGrouping)
+    }
+
+    /// Calculate the absolute beat number (1-indexed) for a beat within a group
+    private func calculateAbsoluteBeat(groupIndex: Int, beatInGroup: Int) -> Int {
+        let groups = viewModel.selectedGrouping.groups
+        var beat = 1
+        for i in 0 ..< groupIndex {
+            beat += groups[i]
+        }
+        return beat + beatInGroup
     }
 
     // MARK: - Play Button Section
@@ -331,7 +356,7 @@ struct MetronomeView: View {
     // MARK: - Controls Section
 
     private var controlsSection: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             // Time signature picker
             Menu {
                 ForEach(TimeSignature.allCases) { signature in
@@ -347,21 +372,60 @@ struct MetronomeView: View {
                     }
                 }
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: 6) {
                     Text(viewModel.timeSignature.displayName)
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundColor(.white)
 
                     Image(systemName: "chevron.up.chevron.down")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 10, weight: .medium))
                         .foregroundColor(Color(hex: "9a8aba"))
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 16)
                 .padding(.vertical, 14)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.white.opacity(0.08))
                 )
+            }
+
+            // Grouping picker (only shown if multiple options available)
+            if viewModel.timeSignature.hasMultipleGroupings {
+                Menu {
+                    ForEach(viewModel.timeSignature.availableGroupings) { grouping in
+                        Button {
+                            viewModel.selectedGrouping = grouping
+                        } label: {
+                            HStack {
+                                Text(grouping.displayName)
+                                if viewModel.selectedGrouping == grouping {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Text(viewModel.selectedGrouping.displayName)
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundColor(Color(hex: "4ECDC4"))
+
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(Color(hex: "4ECDC4").opacity(0.7))
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(hex: "4ECDC4").opacity(0.1))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color(hex: "4ECDC4").opacity(0.3), lineWidth: 1)
+                            )
+                    )
+                }
+                .transition(.opacity.combined(with: .scale(scale: 0.9)))
             }
 
             Spacer()
@@ -387,6 +451,19 @@ struct MetronomeView: View {
             }
             .buttonStyle(.plain)
         }
+        .animation(.easeInOut(duration: 0.2), value: viewModel.timeSignature.hasMultipleGroupings)
+    }
+}
+
+// MARK: - Group Separator Component
+
+/// Visual separator between beat groups
+struct GroupSeparator: View {
+    var body: some View {
+        Rectangle()
+            .fill(Color(hex: "4ECDC4").opacity(0.4))
+            .frame(width: 2, height: 24)
+            .padding(.horizontal, 10)
     }
 }
 

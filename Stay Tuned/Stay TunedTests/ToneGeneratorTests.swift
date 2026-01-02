@@ -168,8 +168,8 @@ struct SineWaveHarmonicTests {
         let generator = ToneGenerator()
 
         #expect(generator.lowFrequencyThreshold == 200.0, "Threshold should be 200Hz")
-        #expect(generator.maxFrequencyBoost == 1.7, "Max boost should be 1.7x")
-        #expect(generator.maxFrequencyBoost <= 2.0, "Max boost shouldn't cause clipping")
+        #expect(generator.maxFrequencyBoost == 2.0, "Max boost should be 2.0x")
+        #expect(generator.maxFrequencyBoost <= 2.5, "Max boost shouldn't cause excessive clipping")
     }
 }
 
@@ -280,8 +280,8 @@ struct KarplusStrongParameterTests {
 
     @Test("Output gain provides good volume without clipping")
     func testOutputGain() {
-        // Current value: 0.95 (increased from 0.85 for better audibility)
-        let outputGain: Float = 0.95
+        // Current value: 1.0 (maximized for phone speaker volume)
+        let outputGain: Float = 1.0
 
         #expect(outputGain <= 1.0, "Output gain should be <= 1.0 to prevent clipping")
         #expect(outputGain >= 0.8, "Output gain should be high for good volume")

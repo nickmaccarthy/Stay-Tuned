@@ -23,6 +23,9 @@ final class MetronomeEngine {
     private(set) var tempo: Double = 120
     private(set) var timeSignature: TimeSignature = .fourFour
 
+    /// Beat positions that should be accented (1-indexed)
+    private var accentPositions: [Int] = [1]
+
     private var currentBeat: Int = 0
     private var nextBeatTime: AVAudioTime?
 
@@ -96,6 +99,11 @@ final class MetronomeEngine {
         if currentBeat >= signature.beatsPerMeasure {
             currentBeat = 0
         }
+    }
+
+    /// Update the accent positions based on beat grouping
+    func setAccentPositions(_ positions: [Int]) {
+        accentPositions = positions.isEmpty ? [1] : positions
     }
 
     // MARK: - Private Methods
@@ -182,15 +190,15 @@ final class MetronomeEngine {
               let playerNode,
               let audioEngine else { return }
 
-        // Determine which buffer to play
-        let isAccent = currentBeat == 0
+        // Determine which buffer to play - accent if current beat is in accent positions
+        let beatNumber = currentBeat + 1 // 1-indexed for comparison
+        let isAccent = accentPositions.contains(beatNumber)
         guard let buffer = isAccent ? accentClickBuffer : regularClickBuffer else { return }
 
         // Calculate samples per beat
         let samplesPerBeat = sampleRate * 60.0 / tempo
 
         // Fire callback on main thread immediately
-        let beatNumber = currentBeat + 1 // 1-indexed for display
         DispatchQueue.main.async { [weak self] in
             self?.onBeat?(beatNumber)
         }

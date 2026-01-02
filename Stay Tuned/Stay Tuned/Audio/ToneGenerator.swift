@@ -57,14 +57,15 @@ final class ToneGenerator {
         1.0 + sineHarmonic2Amplitude + sineHarmonic3Amplitude + sineHarmonic4Amplitude
     }
 
-    /// Base output gain for sine wave (increased from 0.7)
-    private let sineOutputGain: Float = 0.95
+    /// Base output gain for sine wave (maximized for phone speaker volume)
+    private let sineOutputGain: Float = 1.0
 
     /// Frequency threshold below which extra gain boost is applied
     let lowFrequencyThreshold: Double = 200.0
 
     /// Maximum frequency boost multiplier for low frequencies
-    let maxFrequencyBoost: Float = 1.7
+    /// Higher value helps low notes cut through on phone speakers
+    let maxFrequencyBoost: Float = 2.0
 
     // MARK: - Karplus-Strong Parameters
 
@@ -75,8 +76,8 @@ final class ToneGenerator {
     /// Reduced from 0.35 to 0.25 for warmer guitar-like tone
     private let brightnessBlend: Float = 0.25
 
-    /// Output volume for plucked string (increased from 0.85)
-    private let outputGain: Float = 0.95
+    /// Output volume for plucked string (maximized for phone speaker volume)
+    private let outputGain: Float = 1.0
 
     /// Pick position: 0.5 = middle of string (warmer), closer to 0 = near bridge (brighter)
     /// 0.35 gives a natural acoustic guitar sound

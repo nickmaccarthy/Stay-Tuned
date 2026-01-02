@@ -23,6 +23,8 @@ final class MetronomeViewModel: ObservableObject {
     @Published
     var timeSignature: TimeSignature = .fourFour
     @Published
+    var selectedGrouping: BeatGrouping = TimeSignature.fourFour.defaultGrouping
+    @Published
     var volume: Float = 0.7
 
     // MARK: - Persistence
@@ -31,6 +33,8 @@ final class MetronomeViewModel: ObservableObject {
     private var savedTempo: Int = 120
     @AppStorage("metronomeTimeSignature")
     private var savedTimeSignature: String = "4/4"
+    @AppStorage("metronomeGrouping")
+    private var savedGrouping: String = ""
 
     // MARK: - Private Properties
 
@@ -47,12 +51,17 @@ final class MetronomeViewModel: ObservableObject {
         let loadedTempo = Double(savedTempo)
         let loadedTimeSignature = TimeSignature(rawValue: savedTimeSignature) ?? .fourFour
 
+        // Load saved grouping or use default for the time signature
+        let loadedGrouping = loadGrouping(for: loadedTimeSignature, savedValue: savedGrouping)
+
         self.tempo = loadedTempo
         self.timeSignature = loadedTimeSignature
+        self.selectedGrouping = loadedGrouping
 
         // Apply saved values to engine
         engine.setTempo(loadedTempo)
         engine.setTimeSignature(loadedTimeSignature)
+        engine.setAccentPositions(loadedGrouping.accentPositions)
         engine.volume = volume
 
         // Set up beat callback
@@ -64,6 +73,16 @@ final class MetronomeViewModel: ObservableObject {
 
         // Observe property changes using Combine
         setupObservers()
+    }
+
+    private func loadGrouping(for timeSignature: TimeSignature, savedValue: String) -> BeatGrouping {
+        // Try to find matching grouping from available options
+        if !savedValue.isEmpty {
+            if let matching = timeSignature.availableGroupings.first(where: { $0.displayName == savedValue }) {
+                return matching
+            }
+        }
+        return timeSignature.defaultGrouping
     }
 
     private func setupObservers() {
@@ -85,6 +104,21 @@ final class MetronomeViewModel: ObservableObject {
                 guard let self else { return }
                 self.savedTimeSignature = newSignature.rawValue
                 self.engine.setTimeSignature(newSignature)
+
+                // Reset grouping if current one isn't valid for new time signature
+                if !newSignature.availableGroupings.contains(self.selectedGrouping) {
+                    self.selectedGrouping = newSignature.defaultGrouping
+                }
+            }
+            .store(in: &cancellables)
+
+        // Grouping changes
+        $selectedGrouping
+            .dropFirst()
+            .sink { [weak self] newGrouping in
+                guard let self else { return }
+                self.savedGrouping = newGrouping.displayName
+                self.engine.setAccentPositions(newGrouping.accentPositions)
             }
             .store(in: &cancellables)
 
