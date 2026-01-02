@@ -146,19 +146,20 @@ struct SineWaveHarmonicTests {
         let boost200 = generator.calculateFrequencyBoost(for: 200.0)
         #expect(abs(boost200 - 1.0) < 0.01, "At 200Hz, boost should be 1.0")
 
-        // At 100Hz, boost should be 2.0 but capped at max
+        // At 100Hz, boost should be 2.0 (200/100 = 2.0, below max of 2.5)
         let boost100 = generator.calculateFrequencyBoost(for: 100.0)
-        #expect(boost100 == generator.maxFrequencyBoost, "At 100Hz, boost should be capped at max")
+        #expect(abs(boost100 - 2.0) < 0.01, "At 100Hz, boost should be 2.0")
 
-        // At 82Hz (low E), boost should be capped
+        // At 82Hz (low E), boost = 200/82 = 2.44, below max
         let boost82 = generator.calculateFrequencyBoost(for: 82.0)
-        #expect(boost82 == generator.maxFrequencyBoost, "Low E should get max boost")
+        #expect(boost82 < generator.maxFrequencyBoost, "Low E should be below max")
+        #expect(boost82 > 2.0, "Low E should get significant boost")
 
         // At 400Hz, no boost needed
         let boost400 = generator.calculateFrequencyBoost(for: 400.0)
         #expect(abs(boost400 - 1.0) < 0.01, "At 400Hz, no boost needed")
 
-        // At 50Hz, boost is capped at max
+        // At 50Hz, boost is capped at max (200/50 = 4.0, capped to 2.5)
         let boost50 = generator.calculateFrequencyBoost(for: 50.0)
         #expect(boost50 == generator.maxFrequencyBoost, "Very low freq gets max boost")
     }
@@ -168,8 +169,8 @@ struct SineWaveHarmonicTests {
         let generator = ToneGenerator()
 
         #expect(generator.lowFrequencyThreshold == 200.0, "Threshold should be 200Hz")
-        #expect(generator.maxFrequencyBoost == 2.0, "Max boost should be 2.0x")
-        #expect(generator.maxFrequencyBoost <= 2.5, "Max boost shouldn't cause excessive clipping")
+        #expect(generator.maxFrequencyBoost == 2.5, "Max boost should be 2.5x")
+        #expect(generator.maxFrequencyBoost <= 3.0, "Max boost shouldn't cause excessive clipping")
     }
 }
 
@@ -302,9 +303,9 @@ struct KarplusStrongParameterTests {
 
         #expect(generator.stringLowFreqThreshold == 150.0, "Low freq threshold should be 150Hz")
         #expect(generator.stringVeryLowFreqThreshold == 100.0, "Very low freq threshold should be 100Hz")
-        #expect(generator.stringHarmonicBoost2x == 0.5, "2x harmonic boost should be 0.5")
-        #expect(generator.stringHarmonicBoost3x == 0.7, "3x harmonic boost should be 0.7")
-        #expect(generator.stringHarmonicBoost4x == 0.5, "4x harmonic boost should be 0.5")
+        #expect(generator.stringHarmonicBoost2x == 0.7, "2x harmonic boost should be 0.7")
+        #expect(generator.stringHarmonicBoost3x == 0.9, "3x harmonic boost should be 0.9")
+        #expect(generator.stringHarmonicBoost4x == 0.7, "4x harmonic boost should be 0.7")
     }
 
     @Test("Fade out duration prevents clicks")

@@ -65,7 +65,7 @@ final class ToneGenerator {
 
     /// Maximum frequency boost multiplier for low frequencies
     /// Higher value helps low notes cut through on phone speakers
-    let maxFrequencyBoost: Float = 2.0
+    let maxFrequencyBoost: Float = 2.5
 
     // MARK: - Karplus-Strong Parameters
 
@@ -96,13 +96,13 @@ final class ToneGenerator {
     let stringVeryLowFreqThreshold: Double = 100.0
 
     /// Harmonic boost amount for 2x frequency
-    let stringHarmonicBoost2x: Float = 0.5
+    let stringHarmonicBoost2x: Float = 0.7
 
     /// Harmonic boost amount for 3x frequency (very low strings only)
-    let stringHarmonicBoost3x: Float = 0.7
+    let stringHarmonicBoost3x: Float = 0.9
 
     /// Harmonic boost amount for 4x frequency (very low strings only)
-    let stringHarmonicBoost4x: Float = 0.5
+    let stringHarmonicBoost4x: Float = 0.7
 
     /// Phase for low-frequency harmonic generation (2x)
     private var lowFreqHarmonicPhase2x: Double = 0
@@ -262,9 +262,11 @@ final class ToneGenerator {
 
     private func setupAudioEngine() {
         // Configure audio session for playback
+        // Use .playAndRecord to be compatible with the tuner's microphone session
+        // Use .defaultToSpeaker to ensure sound plays through speaker, not earpiece
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .default, options: [])
+            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
             try session.setActive(true)
         } catch {
             print("ToneGenerator: Audio session setup failed - \(error.localizedDescription)")
