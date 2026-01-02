@@ -68,7 +68,9 @@ Stay Tuned/
 ├── ViewModels/
 │   └── TunerViewModel.swift    # Main app state and audio processing logic
 ├── Views/
-│   ├── TunerView.swift         # Main tuner screen
+│   ├── TunerView.swift         # Main tuner screen with Tools Menu integration
+│   ├── StageModeView.swift     # High-contrast, landscape-only performance view
+│   ├── ToolsMenuView.swift     # Consolidated menu for app tools (Settings, Stage Mode, etc.)
 │   ├── HeadstockView.swift     # Visual headstock with tappable tuning pegs
 │   ├── TuningMeterView.swift   # Animated needle meter with cents/Hz display
 │   ├── TuningPickerView.swift  # Tuning selection menu
@@ -107,6 +109,13 @@ Stay Tuned/
 Organized in `TuningPresets.swift`:
 - **Guitar:** Standard, Half Step Down, Whole Step Down, Drop D, DADGAD, Open tunings (G, D, C, E, A, B)
 - Future: Banjo, Ukulele, Bass, etc.
+
+### Stage Mode (StageModeView.swift)
+- **Purpose:** High-contrast, interference-free view for live performance
+- **Entry:** Accessed via Tools Menu or by rotating device to landscape
+- **Landscape Lock:** View enforces landscape orientation by hiding close button
+- **Wake Lock:** Disables idle timer to keep screen on during performance
+- **Responsive Layout:** Dynamically scales UI elements based on available screen space using `GeometryReader`
 
 ## Settings Architecture
 
