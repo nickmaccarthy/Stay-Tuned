@@ -349,38 +349,39 @@ struct TunerView: View {
                 }
             }
 
-            // Metronome button
+            // MENU BUTTON
             Button {
-                showMetronome = true
+                showMenu = true
             } label: {
-                MetronomeIcon()
-                    .stroke(Color(hex: "9a8aba"), style: StrokeStyle(lineWidth: 0.9, lineCap: .round, lineJoin: .round))
-                    .frame(width: 20, height: 20)
-            }
-            .sheet(isPresented: $showMetronome) {
-                MetronomeView()
-                    .presentationDetents([.medium, .large])
-                    .presentationDragIndicator(.visible)
-            }
-
-            // Settings button
-            Button {
-                showSettings = true
-            } label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 18))
+                Image(systemName: "line.3.horizontal")
+                    .font(.system(size: 22))
                     .foregroundColor(Color(hex: "9a8aba"))
             }
-            .sheet(isPresented: $showSettings) {
-                SettingsView(
-                    referencePitch: $viewModel.referencePitch,
-                    toneType: Binding(
-                        get: { viewModel.toneType },
-                        set: { viewModel.toneType = $0 }
-                    )
+            .sheet(isPresented: $showMenu) {
+                ToolsMenuView(
+                    viewModel: viewModel,
+                    showStageMode: $showGigMode
                 )
-                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
+                .presentationDetents([.medium, .large])
+            }
+        }
+        .padding(.horizontal, 16)
+        .fullScreenCover(isPresented: $showGigMode) {
+            StageModeView(viewModel: viewModel)
+        }
+        // Rotation Detection
+        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+            let orientation = UIDevice.current.orientation
+            if orientation.isLandscape {
+                if !showGigMode {
+                    showGigMode = true
+                }
+            } else if orientation.isPortrait {
+                // Optional: Auto-dismiss when rotating back
+                if showGigMode {
+                    showGigMode = false
+                }
             }
         }
     }
@@ -388,9 +389,9 @@ struct TunerView: View {
     @State
     private var showTipJar = false
     @State
-    private var showSettings = false
+    private var showMenu = false
     @State
-    private var showMetronome = false
+    private var showGigMode = false
 
     private var tipJarSection: some View {
         Button {

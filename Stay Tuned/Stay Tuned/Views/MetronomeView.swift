@@ -25,6 +25,9 @@ struct MetronomeView: View {
     @State
     private var repeatTimer: Timer?
 
+    // Fixed width for grouping picker to prevent layout shift
+    private let groupingPickerWidth: CGFloat = 70
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -66,16 +69,17 @@ struct MetronomeView: View {
                     Spacer()
                         .frame(height: 32)
 
-                    // Play/Stop button
+                    // Time signature, grouping, and tap tempo - MOVED ABOVE START BUTTON
+                    controlsSection
+
+                    Spacer()
+                        .frame(height: 20)
+
+                    // Play/Stop button - NOW AT BOTTOM
                     playButtonSection
 
                     Spacer()
                         .frame(height: 24)
-
-                    // Time signature and tap tempo
-                    controlsSection
-
-                    Spacer()
                 }
                 .padding(.horizontal, 24)
             }
@@ -381,52 +385,57 @@ struct MetronomeView: View {
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(Color(hex: "9a8aba"))
                 }
+                .frame(height: 44) // Minimum touch target
                 .padding(.horizontal, 16)
-                .padding(.vertical, 14)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.white.opacity(0.08))
                 )
             }
 
-            // Grouping picker (only shown if multiple options available)
-            if viewModel.timeSignature.hasMultipleGroupings {
-                Menu {
-                    ForEach(viewModel.timeSignature.availableGroupings) { grouping in
-                        Button {
-                            viewModel.selectedGrouping = grouping
-                        } label: {
-                            HStack {
-                                Text(grouping.displayName)
-                                if viewModel.selectedGrouping == grouping {
-                                    Image(systemName: "checkmark")
+            // Fixed-width container for grouping picker to prevent layout shift
+            ZStack {
+                if viewModel.timeSignature.hasMultipleGroupings {
+                    Menu {
+                        ForEach(viewModel.timeSignature.availableGroupings) { grouping in
+                            Button {
+                                viewModel.selectedGrouping = grouping
+                            } label: {
+                                HStack {
+                                    Text(grouping.displayName)
+                                    if viewModel.selectedGrouping == grouping {
+                                        Image(systemName: "checkmark")
+                                    }
                                 }
                             }
                         }
-                    }
-                } label: {
-                    HStack(spacing: 6) {
-                        Text(viewModel.selectedGrouping.displayName)
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
-                            .foregroundColor(Color(hex: "4ECDC4"))
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(viewModel.selectedGrouping.displayName)
+                                .font(.system(size: 14, weight: .medium, design: .rounded))
+                                .foregroundColor(Color(hex: "4ECDC4"))
 
-                        Image(systemName: "chevron.up.chevron.down")
-                            .font(.system(size: 10, weight: .medium))
-                            .foregroundColor(Color(hex: "4ECDC4").opacity(0.7))
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(Color(hex: "4ECDC4").opacity(0.7))
+                        }
+                        .frame(width: groupingPickerWidth, height: 44) // Fixed size, minimum touch target
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(hex: "4ECDC4").opacity(0.1))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color(hex: "4ECDC4").opacity(0.3), lineWidth: 1)
+                                )
+                        )
                     }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 14)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(hex: "4ECDC4").opacity(0.1))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color(hex: "4ECDC4").opacity(0.3), lineWidth: 1)
-                            )
-                    )
+                } else {
+                    // Invisible placeholder to maintain layout
+                    Color.clear
+                        .frame(width: groupingPickerWidth, height: 44)
                 }
-                .transition(.opacity.combined(with: .scale(scale: 0.9)))
             }
+            .frame(width: groupingPickerWidth)
 
             Spacer()
 
@@ -442,8 +451,8 @@ struct MetronomeView: View {
                         .font(.system(size: 16, weight: .semibold))
                 }
                 .foregroundColor(Color(hex: "4ECDC4"))
+                .frame(height: 44) // Minimum touch target
                 .padding(.horizontal, 20)
-                .padding(.vertical, 14)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color(hex: "4ECDC4").opacity(0.15))
@@ -451,7 +460,6 @@ struct MetronomeView: View {
             }
             .buttonStyle(.plain)
         }
-        .animation(.easeInOut(duration: 0.2), value: viewModel.timeSignature.hasMultipleGroupings)
     }
 }
 
