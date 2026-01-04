@@ -7,6 +7,7 @@
 
 import Combine
 import SwiftUI
+import UIKit
 
 /// ViewModel for the metronome feature
 @MainActor
@@ -27,6 +28,32 @@ final class MetronomeViewModel: ObservableObject {
     @Published
     var volume: Float = 0.7
 
+    // Listen mode properties
+    @Published
+    var isListening = false
+    @Published
+    var detectedBPM: Double?
+    @Published
+    var alternativeBPM: Double?
+    @Published
+    var listenConfidence: Float = 0
+    @Published
+    var listenProgress: Float = 0
+    @Published
+    var listenStatus: ListenStatus = .idle
+    @Published
+    var onsetStrength: Float = 0 // Triggers UI pulse on beat detection (0-1)
+
+    // MARK: - Listen Status
+
+    enum ListenStatus: Equatable {
+        case idle
+        case listening
+        case analyzing
+        case detected
+        case tooQuiet
+    }
+
     // MARK: - Persistence
 
     @AppStorage("metronomeTempo")
@@ -40,9 +67,20 @@ final class MetronomeViewModel: ObservableObject {
 
     private let engine = MetronomeEngine()
     private var tapTimes: [Date] = []
-    private let maxTapCount = 4
-    private let tapResetInterval: TimeInterval = 2.0 // Reset if no tap for 2 seconds
+    private let maxTapCount = 6 // Increased for more stability
+    private let tapResetInterval: TimeInterval = 2.5 // Slightly longer for breathing room
+    private var lastCalculatedBPM: Double? // For EMA smoothing
     private var cancellables = Set<AnyCancellable>()
+
+    // Haptic feedback generator
+    private let hapticGenerator = UIImpactFeedbackGenerator(style: .light)
+    private let successHapticGenerator = UINotificationFeedbackGenerator()
+
+    // Listen mode components
+    private var listenAudioEngine: AudioEngine?
+    private let beatDetector = BeatDetector()
+    private var silenceCounter = 0
+    private let silenceThreshold = 20 // Number of quiet buffers before showing "too quiet"
 
     // MARK: - Initialization
 
@@ -63,6 +101,10 @@ final class MetronomeViewModel: ObservableObject {
         engine.setTimeSignature(loadedTimeSignature)
         engine.setAccentPositions(loadedGrouping.accentPositions)
         engine.volume = volume
+
+        // Prepare haptic generators
+        hapticGenerator.prepare()
+        successHapticGenerator.prepare()
 
         // Set up beat callback
         engine.onBeat = { [weak self] beat in
@@ -144,6 +186,11 @@ final class MetronomeViewModel: ObservableObject {
 
     /// Start the metronome
     func start() {
+        // Stop listening if active
+        if isListening {
+            stopListening()
+        }
+
         currentBeat = 1
         engine.start()
         isPlaying = true
@@ -166,14 +213,17 @@ final class MetronomeViewModel: ObservableObject {
         tempo = max(40, tempo - 1)
     }
 
-    /// Process a tap for tap tempo feature
+    // MARK: - Tap Tempo
+
+    /// Process a tap for tap tempo feature using EMA with outlier rejection
     func tap() {
         let now = Date()
 
-        // Reset if too long since last tap
+        // 1. Reset if too long since last tap
         if let lastTap = tapTimes.last,
            now.timeIntervalSince(lastTap) > tapResetInterval {
             tapTimes.removeAll()
+            lastCalculatedBPM = nil
         }
 
         // Add new tap
@@ -185,19 +235,159 @@ final class MetronomeViewModel: ObservableObject {
         }
 
         // Need at least 2 taps to calculate tempo
-        guard tapTimes.count >= 2 else { return }
+        guard tapTimes.count >= 2 else {
+            // First tap - just provide haptic feedback
+            hapticGenerator.impactOccurred()
+            return
+        }
 
-        // Calculate average interval between taps
+        // 2. Calculate current interval (time since previous tap)
+        let currentInterval = now.timeIntervalSince(tapTimes[tapTimes.count - 2])
+        let currentBPM = 60.0 / currentInterval
+
+        // 3. Outlier rejection - ignore if wildly different from last BPM
+        if let lastBPM = lastCalculatedBPM {
+            let ratio = currentBPM / lastBPM
+            // Reject if more than 50% different (likely a double-tap or missed tap)
+            if ratio < 0.5 || ratio > 1.5 {
+                // Remove the bad tap and skip update
+                tapTimes.removeLast()
+                return
+            }
+        }
+
+        // Tap was valid - provide haptic feedback
+        hapticGenerator.impactOccurred()
+
+        // 4. Calculate new tempo using Exponential Moving Average
+        if let lastBPM = lastCalculatedBPM {
+            // Weight: 30% new, 70% old = smooth but responsive
+            let smoothedBPM = 0.3 * currentBPM + 0.7 * lastBPM
+            lastCalculatedBPM = smoothedBPM
+            tempo = max(40, min(240, smoothedBPM))
+        } else {
+            // First valid calculation - use average of all intervals for stability
+            let avgInterval = calculateAverageInterval()
+            let avgBPM = 60.0 / avgInterval
+            lastCalculatedBPM = avgBPM
+            tempo = max(40, min(240, avgBPM))
+        }
+    }
+
+    /// Calculate average interval between all stored taps
+    private func calculateAverageInterval() -> TimeInterval {
+        guard tapTimes.count >= 2 else { return 0.5 } // Default to 120 BPM
+
         var totalInterval: TimeInterval = 0
         for i in 1 ..< tapTimes.count {
             totalInterval += tapTimes[i].timeIntervalSince(tapTimes[i - 1])
         }
-        let averageInterval = totalInterval / Double(tapTimes.count - 1)
+        return totalInterval / Double(tapTimes.count - 1)
+    }
 
-        // Convert to BPM (60 seconds / interval)
-        let calculatedBPM = 60.0 / averageInterval
+    // MARK: - Listen Mode
 
-        // Clamp to valid range
-        tempo = max(40, min(240, calculatedBPM))
+    /// Start listening for tempo via microphone
+    func startListening() {
+        // Stop metronome if playing
+        if isPlaying {
+            stop()
+        }
+
+        // Reset state
+        beatDetector.reset()
+        detectedBPM = nil
+        alternativeBPM = nil
+        listenConfidence = 0
+        listenProgress = 0
+        onsetStrength = 0
+        silenceCounter = 0
+        listenStatus = .listening
+
+        // Set up onset detection callback for visual feedback
+        beatDetector.onOnsetDetected = { [weak self] strength in
+            Task { @MainActor in
+                self?.onsetStrength = strength
+                // Light haptic on each detected beat
+                self?.hapticGenerator.impactOccurred()
+            }
+        }
+
+        // Create and start audio engine
+        listenAudioEngine = AudioEngine()
+
+        listenAudioEngine?.onBufferReceived = { [weak self] samples, sampleRate in
+            Task { @MainActor in
+                self?.processListenBuffer(samples: samples, sampleRate: sampleRate)
+            }
+        }
+
+        listenAudioEngine?.start()
+        isListening = true
+    }
+
+    /// Stop listening and optionally keep detected tempo
+    func stopListening() {
+        listenAudioEngine?.stop()
+        listenAudioEngine = nil
+        isListening = false
+        listenStatus = .idle
+    }
+
+    /// Apply the detected BPM to the metronome tempo
+    func applyDetectedBPM() {
+        guard let detected = detectedBPM else { return }
+
+        tempo = detected
+        successHapticGenerator.notificationOccurred(.success)
+        stopListening()
+    }
+
+    /// Apply the alternative BPM (half/double time)
+    func applyAlternativeBPM() {
+        guard let alternative = alternativeBPM else { return }
+
+        tempo = alternative
+        successHapticGenerator.notificationOccurred(.success)
+        stopListening()
+    }
+
+    /// Process audio buffer for beat detection
+    private func processListenBuffer(samples: [Float], sampleRate: Double) {
+        guard isListening else { return }
+
+        // Check if audio is too quiet
+        var rms: Float = 0
+        samples.withUnsafeBufferPointer { ptr in
+            vDSP_rmsqv(ptr.baseAddress!, 1, &rms, vDSP_Length(samples.count))
+        }
+
+        if rms < 0.002 {
+            silenceCounter += 1
+            if silenceCounter > silenceThreshold {
+                listenStatus = .tooQuiet
+            }
+        } else {
+            silenceCounter = 0
+            if listenStatus == .tooQuiet {
+                listenStatus = .listening
+            }
+        }
+
+        // Analyze audio for beats
+        if let result = beatDetector.analyze(samples: samples, sampleRate: sampleRate) {
+            detectedBPM = result.bpm
+            alternativeBPM = result.alternativeBPM
+            listenConfidence = result.confidence
+
+            // Show detected as soon as we have a BPM (no separate "analyzing" phase)
+            listenStatus = .detected
+        }
+
+        // Update progress
+        listenProgress = beatDetector.analysisProgress
     }
 }
+
+// Import Accelerate for RMS calculation in listen mode
+import Accelerate
