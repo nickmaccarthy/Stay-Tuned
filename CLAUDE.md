@@ -33,6 +33,7 @@ Test files are located in `Stay TunedTests/`:
 - `TuningTests.swift` - Tuning and GuitarString models
 - `AudioTests.swift` - Pitch detection and spectrum analyzer sensitivity
 - `TunerViewModelTests.swift` - ViewModel business logic
+- `BeatDetectorTests.swift` - Autocorrelation & BPM logic
 
 ### Critical Audio Configuration (DO NOT CHANGE WITHOUT TESTING)
 
@@ -98,6 +99,12 @@ Stay Tuned/
 - **Sustained confirmation:** 0.5 seconds in-tune to confirm a string
 - **Confirmed strings:** Persist green state until user taps to retune
 - **All-tuned celebration:** Quick flash + haptic when all strings confirmed
+
+### Beat Detection (BeatDetector.swift)
+- **Algorithm:** Normalized Autocorrelation (172Hz resolution)
+- **Harmonic Correction:** "Double-Time Check" favors 2x tempos (e.g., 120 vs 60 BPM) if detected strength > 50%
+- **Buffer:** 3.5s circular buffer of RMS energy
+- **Range:** 60-200 BPM
 
 ### Audio Pipeline
 1. AudioEngine captures mic input with small buffer (low latency)
