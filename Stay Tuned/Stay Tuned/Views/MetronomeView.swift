@@ -148,22 +148,16 @@ struct MetronomeView: View {
 
             // Detected BPM display
             if let bpm = viewModel.detectedBPM {
-                VStack(spacing: 8) {
-                    Text("\(Int(bpm))")
-                        .font(.system(size: 64, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                        .monospacedDigit()
-                        .contentTransition(.numericText())
-                        .animation(.snappy(duration: 0.2), value: bpm)
+                Text("\(Int(bpm))")
+                    .font(.system(size: 64, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+                    .animation(.snappy(duration: 0.2), value: bpm)
 
-                    Text("BPM")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(Color(hex: "7c6c9a"))
-
-                    // Confidence indicator
-                    ConfidenceBar(confidence: viewModel.listenConfidence)
-                        .frame(width: 120)
-                }
+                Text("BPM")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(hex: "7c6c9a"))
             } else {
                 // Progress indicator while waiting for enough beats
                 VStack(spacing: 16) {

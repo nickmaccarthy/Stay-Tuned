@@ -222,18 +222,22 @@ struct SpectrumAnalyzerView: View {
         // Smooth animation
         for i in 0 ..< bandCount {
             if newEnergies[i] > bandEnergies[i] {
-                bandEnergies[i] += (newEnergies[i] - bandEnergies[i]) * 0.5
+                // Faster attack (was 0.5)
+                bandEnergies[i] += (newEnergies[i] - bandEnergies[i]) * 0.85
             } else {
-                bandEnergies[i] += (newEnergies[i] - bandEnergies[i]) * 0.12
+                // Faster decay (was 0.12)
+                bandEnergies[i] += (newEnergies[i] - bandEnergies[i]) * 0.35
             }
         }
 
         // Update overall amplitude
         let avgEnergy = totalEnergy / CGFloat(bandCount)
         if avgEnergy > smoothedAmplitude {
-            smoothedAmplitude += (avgEnergy - smoothedAmplitude) * 0.4
+            // Faster attack (was 0.4)
+            smoothedAmplitude += (avgEnergy - smoothedAmplitude) * 0.7
         } else {
-            smoothedAmplitude += (avgEnergy - smoothedAmplitude) * 0.1
+            // Faster decay (was 0.1)
+            smoothedAmplitude += (avgEnergy - smoothedAmplitude) * 0.25
         }
     }
 
