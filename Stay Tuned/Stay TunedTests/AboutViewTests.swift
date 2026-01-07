@@ -5,6 +5,7 @@
 //  Tests for AboutView and related utilities
 //
 
+import Foundation
 import Testing
 @testable import Stay_Tuned
 

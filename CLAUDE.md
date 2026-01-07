@@ -33,6 +33,7 @@ Test files are located in `Stay TunedTests/`:
 - `TuningTests.swift` - Tuning and GuitarString models
 - `AudioTests.swift` - Pitch detection and spectrum analyzer sensitivity
 - `TunerViewModelTests.swift` - ViewModel business logic
+- `BeatDetectorTests.swift` - Autocorrelation & BPM logic
 
 ### Critical Audio Configuration (DO NOT CHANGE WITHOUT TESTING)
 
@@ -68,7 +69,9 @@ Stay Tuned/
 ├── ViewModels/
 │   └── TunerViewModel.swift    # Main app state and audio processing logic
 ├── Views/
-│   ├── TunerView.swift         # Main tuner screen
+│   ├── TunerView.swift         # Main tuner screen with Tools Menu integration
+│   ├── StageModeView.swift     # High-contrast, landscape-only performance view
+│   ├── ToolsMenuView.swift     # Consolidated menu for app tools (Settings, Stage Mode, etc.)
 │   ├── HeadstockView.swift     # Visual headstock with tappable tuning pegs
 │   ├── TuningMeterView.swift   # Animated needle meter with cents/Hz display
 │   ├── TuningPickerView.swift  # Tuning selection menu
@@ -97,6 +100,12 @@ Stay Tuned/
 - **Confirmed strings:** Persist green state until user taps to retune
 - **All-tuned celebration:** Quick flash + haptic when all strings confirmed
 
+### Beat Detection (BeatDetector.swift)
+- **Algorithm:** Normalized Autocorrelation (172Hz resolution)
+- **Harmonic Correction:** "Double-Time Check" favors 2x tempos (e.g., 120 vs 60 BPM) if detected strength > 50%
+- **Buffer:** 3.5s circular buffer of RMS energy
+- **Range:** 60-200 BPM
+
 ### Audio Pipeline
 1. AudioEngine captures mic input with small buffer (low latency)
 2. PitchDetector accumulates samples and detects pitch
@@ -107,6 +116,13 @@ Stay Tuned/
 Organized in `TuningPresets.swift`:
 - **Guitar:** Standard, Half Step Down, Whole Step Down, Drop D, DADGAD, Open tunings (G, D, C, E, A, B)
 - Future: Banjo, Ukulele, Bass, etc.
+
+### Stage Mode (StageModeView.swift)
+- **Purpose:** High-contrast, interference-free view for live performance
+- **Entry:** Accessed via Tools Menu or by rotating device to landscape
+- **Landscape Lock:** View enforces landscape orientation by hiding close button
+- **Wake Lock:** Disables idle timer to keep screen on during performance
+- **Responsive Layout:** Dynamically scales UI elements based on available screen space using `GeometryReader`
 
 ## Settings Architecture
 
@@ -194,3 +210,49 @@ Located in `TipJarView` within `ContentView.swift`:
 - Venmo: `@NickMacCarthy`
 - Cash App: `$NickMacCarthy`
 - PayPal: `nickmaccarthy`
+
+
+## App Store Guidelines Compliance
+
+This app must adhere to Apple's App Store Review Guidelines. Key areas to watch:
+
+
+### Guideline 2.1 - In-App Purchases
+
+When submitting to the App Store:
+- All IAP products must be submitted alongside the app binary
+- Each IAP requires a **screenshot** in App Store Connect
+- IAPs must be marked "Ready to Submit" before app submission
+
+**Current IAP Products:**
+| Product ID | Price | Description |
+|------------|-------|-------------|
+| `nmac.TipCalculator.tip.service.good` | $0.99 | Good Service tip |
+| `nmac.TipCalculator.tip.service.great` | $2.99 | Great Service tip |
+| `nmac.TipCalculator.tip.service.amazing` | $4.99 | Amazing Service tip |
+
+### Guideline 2.3.3 - Screenshots
+
+- iPhone screenshots must show iPhone UI (not iPad)
+- iPad screenshots must show iPad UI (not iPhone in a frame)
+- Screenshots must reflect actual app functionality
+- Avoid marketing materials that don't show the app in use
+
+**Required Screenshot Sizes:**
+| Device | Size (pixels) |
+|--------|---------------|
+| 6.7" iPhone | 1290 × 2796 |
+| 6.5" iPhone | 1284 × 2778 |
+| 12.9" iPad Pro | 2048 × 2732 |
+| 13" iPad Air/Pro | 2064 × 2752 |
+
+### Pre-Submission Checklist
+
+- [ ] All permission request flows use neutral language ("Continue", "Next")
+- [ ] No skip/bypass buttons before system permission dialogs
+- [ ] All IAP products have screenshots in App Store Connect
+- [ ] IAP products are included in the submission
+- [ ] iPhone screenshots taken on iPhone simulator
+- [ ] iPad screenshots taken on iPad simulator (not iPhone in frame)
+- [ ] All unit tests pass
+- [ ] Version and build numbers updated

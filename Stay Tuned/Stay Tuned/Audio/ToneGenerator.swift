@@ -2,7 +2,7 @@
 //  ToneGenerator.swift
 //  Stay Tuned
 //
-//  Supports both pure sine wave and Karplus-Strong physical modeling synthesis
+//  Supports both harmonic-enriched sine wave and extended Karplus-Strong synthesis
 //
 
 import AVFoundation
@@ -11,8 +11,8 @@ import Foundation
 /// Generates reference tones for tuning
 ///
 /// Supports two synthesis modes:
-/// - **Sine Wave**: Pure, clean tone ideal for precise tuning
-/// - **Plucked String (Karplus-Strong)**: Realistic guitar-like sound
+/// - **Sine Wave**: Harmonic-enriched tone for better audibility on phone speakers
+/// - **Plucked String (Karplus-Strong)**: Realistic guitar-like sound with body resonance
 final class ToneGenerator {
 
     // MARK: - Properties
@@ -23,8 +23,19 @@ final class ToneGenerator {
     private(set) var isPlaying = false
     private(set) var currentFrequency: Double = 0
 
+    /// Controls whether sound is generated (engine stays running for instant playback)
+    private var shouldGenerateSound = false
+
     /// The current tone type (sine or string)
-    var toneType: ToneType = .string
+    var toneType: ToneType = .string {
+        didSet {
+            // Store for audio thread access
+            currentToneTypeIsSine = (toneType == .sine)
+        }
+    }
+
+    /// Thread-safe copy of tone type for audio callback
+    private var currentToneTypeIsSine = false
 
     // Sine wave phase
     private var sinePhase: Double = 0
@@ -41,25 +52,103 @@ final class ToneGenerator {
     private var sineEnvelopeGain: Float = 0
     private var sineEnvelopeTarget: Float = 1.0
 
-    // Tunable parameters for Karplus-Strong
-    // decayFactor: Controls sustain (0.99 = short, 0.999 = long)
+    // MARK: - Sine Wave Parameters
+
+    /// Harmonic amplitudes for enriched sine wave (relative to fundamental)
+    /// These overtones make low frequencies audible on phone speakers
+    let sineHarmonic2Amplitude: Float = 1 // 2nd harmonic (octave above)
+    let sineHarmonic3Amplitude: Float = 0.70 // 3rd harmonic
+    let sineHarmonic4Amplitude: Float = 0.50 // 4th harmonic (2 octaves above)
+
+    /// Normalization factor for combined harmonics (sum of all amplitudes)
+    private var sineNormalizationFactor: Float {
+        1.0 + sineHarmonic2Amplitude + sineHarmonic3Amplitude + sineHarmonic4Amplitude
+    }
+
+    /// Base output gain for sine wave (maximized for phone speaker volume)
+    private let sineOutputGain: Float = 1.0
+
+    /// Frequency threshold below which extra gain boost is applied
+    let lowFrequencyThreshold: Double = 200.0
+
+    /// Maximum frequency boost multiplier for low frequencies
+    /// Higher value helps low notes cut through on phone speakers
+    let maxFrequencyBoost: Float = 2.5
+
+    // MARK: - Karplus-Strong Parameters
+
+    /// Decay factor: Controls sustain (0.99 = short, 0.999 = long)
     private let decayFactor: Float = 0.997
 
-    // brightnessBlend: Low-pass filter balance (0 = mellow/warm, 1 = bright/harsh)
-    private let brightnessBlend: Float = 0.35
+    /// Brightness blend: Low-pass filter balance (0 = mellow/warm, 1 = bright/harsh)
+    /// Reduced from 0.35 to 0.25 for warmer guitar-like tone
+    private let brightnessBlend: Float = 0.25
 
-    // Output volume
-    private let outputGain: Float = 0.85
-    private let sineOutputGain: Float = 0.7 // Sine is perceived louder, so slightly lower
+    /// Output volume for plucked string (maximized for phone speaker volume)
+    private let outputGain: Float = 1.0
 
-    // Fade durations in seconds
+    /// Pick position: 0.5 = middle of string (warmer), closer to 0 = near bridge (brighter)
+    /// 0.35 gives a natural acoustic guitar sound
+    let pickPosition: Float = 0.35
+
+    /// Body resonance amount (subtle warmth simulation)
+    let bodyResonance: Float = 0.15
+
+    /// Body resonance filter state
+    private var bodyResonanceState: Float = 0
+
+    /// Frequency threshold for low-frequency harmonic boost
+    let stringLowFreqThreshold: Double = 150.0
+
+    /// Very low frequency threshold - needs extra harmonics (C, D strings)
+    let stringVeryLowFreqThreshold: Double = 100.0
+
+    /// Harmonic boost amount for 2x frequency
+    let stringHarmonicBoost2x: Float = 0.7
+
+    /// Harmonic boost amount for 3x frequency (very low strings only)
+    let stringHarmonicBoost3x: Float = 0.9
+
+    /// Harmonic boost amount for 4x frequency (very low strings only)
+    let stringHarmonicBoost4x: Float = 0.7
+
+    /// Phase for low-frequency harmonic generation (2x)
+    private var lowFreqHarmonicPhase2x: Double = 0
+
+    /// Phase for low-frequency harmonic generation (3x)
+    private var lowFreqHarmonicPhase3x: Double = 0
+
+    /// Phase for low-frequency harmonic generation (4x)
+    private var lowFreqHarmonicPhase4x: Double = 0
+
+    // MARK: - Common Parameters
+
+    /// Fade durations in seconds
     private let fadeInDuration: Double = 0.02 // 20ms fade in for sine
-    private let fadeOutDuration: Double = 0.15 // 150ms fade out
+    private let fadeOutDuration: Double = 0.05 // 50ms fade out
 
-    // Store sample rate for calculations
+    /// Store sample rate for calculations
     private var sampleRate: Double = 48000
 
+    /// Whether the engine has been prepared
+    private var isEnginePrepared = false
+
     // MARK: - Public Methods
+
+    /// Pre-initialize the audio engine for instant playback
+    /// Call this early (e.g., in TunerViewModel.init) to eliminate startup delay
+    func prepareEngine() {
+        guard !isEnginePrepared else { return }
+
+        setupAudioEngine()
+
+        do {
+            try audioEngine?.start()
+            isEnginePrepared = true
+        } catch {
+            print("ToneGenerator: Failed to prepare engine - \(error.localizedDescription)")
+        }
+    }
 
     /// Start playing a tone at the specified frequency
     /// If already playing the same note with string type, "re-pluck" by refilling the buffer
@@ -72,25 +161,34 @@ final class ToneGenerator {
 
         // Cancel fade out if in progress
         if isFadingOut {
-            stopImmediate()
+            // Just reset the fade state, don't stop engine
+            isFadingOut = false
+            fadeOutGain = 1.0
         }
 
         currentFrequency = frequency
-        isFadingOut = false
         fadeOutGain = 1.0
         sinePhase = 0
         sineEnvelopeGain = 0
         sineEnvelopeTarget = 1.0
+        bodyResonanceState = 0
+        lowFreqHarmonicPhase2x = 0
+        lowFreqHarmonicPhase3x = 0
+        lowFreqHarmonicPhase4x = 0
 
-        setupAudioEngine()
-
-        do {
-            try audioEngine?.start()
-            isPlaying = true
-        } catch {
-            print("ToneGenerator: Failed to start - \(error.localizedDescription)")
-            isPlaying = false
+        // Ensure engine is prepared (first time or if stopped)
+        if !isEnginePrepared {
+            prepareEngine()
         }
+
+        // Initialize delay buffer for string synthesis
+        if toneType == .string {
+            initializeDelayBuffer(for: frequency, sampleRate: sampleRate)
+        }
+
+        // Start generating sound immediately
+        shouldGenerateSound = true
+        isPlaying = true
     }
 
     /// Stop playing with smooth fade out
@@ -100,7 +198,7 @@ final class ToneGenerator {
         isFadingOut = true
         sineEnvelopeTarget = 0
 
-        // Poll until amplitude reaches zero, then stop
+        // Poll until amplitude reaches zero, then stop generating
         checkAndStop()
     }
 
@@ -113,24 +211,37 @@ final class ToneGenerator {
         let bufferLength = max(2, Int(sampleRate / frequency))
 
         // Fill with band-limited noise for natural pluck sound
-        // Use pink-ish noise (low-pass filtered) for warmer tone
         delayBuffer = (0 ..< bufferLength).map { _ in
             Float.random(in: -0.5 ... 0.5)
         }
 
-        // Simple low-pass to make noise warmer (reduce high frequency content)
-        for i in 1 ..< bufferLength {
-            delayBuffer[i] = 0.6 * delayBuffer[i] + 0.4 * delayBuffer[i - 1]
+        // First pass: aggressive low-pass to make noise warmer
+        // (increased from 0.6/0.4 to 0.4/0.6 for more warmth)
+        for idx in 1 ..< bufferLength {
+            delayBuffer[idx] = 0.4 * delayBuffer[idx] + 0.6 * delayBuffer[idx - 1]
+        }
+
+        // Second pass: additional smoothing for even warmer tone
+        for idx in 1 ..< bufferLength {
+            delayBuffer[idx] = 0.5 * delayBuffer[idx] + 0.5 * delayBuffer[idx - 1]
+        }
+
+        // Apply pick position simulation using comb filter
+        // This removes harmonics at multiples of (1/pickPosition) for more natural timbre
+        let pickDelay = max(1, Int(Float(bufferLength) * pickPosition))
+        for idx in pickDelay ..< bufferLength {
+            delayBuffer[idx] -= delayBuffer[idx - pickDelay] * 0.5
         }
 
         // Apply short attack envelope to noise for softer pluck transient
         let attackSamples = min(bufferLength / 4, 60)
-        for i in 0 ..< attackSamples {
-            let envelope = Float(i) / Float(attackSamples)
-            delayBuffer[i] *= envelope
+        for idx in 0 ..< attackSamples {
+            let envelope = Float(idx) / Float(attackSamples)
+            delayBuffer[idx] *= envelope
         }
 
         bufferIndex = 0
+        bodyResonanceState = 0
     }
 
     /// Calculate the expected delay buffer length for a given frequency
@@ -139,15 +250,21 @@ final class ToneGenerator {
         max(2, Int(sampleRate / frequency))
     }
 
+    /// Calculate frequency-dependent gain boost for low frequencies
+    /// Exposed for testing
+    func calculateFrequencyBoost(for frequency: Double) -> Float {
+        Float(min(Double(maxFrequencyBoost), max(1.0, lowFrequencyThreshold / frequency)))
+    }
+
     // MARK: - Private Methods
 
     private func checkAndStop() {
         guard isFadingOut else { return }
 
         // Check if fade out is complete
-        let fadeComplete = toneType == .sine ? sineEnvelopeGain <= 0.001 : fadeOutGain <= 0.001
+        let fadeComplete = currentToneTypeIsSine ? sineEnvelopeGain <= 0.001 : fadeOutGain <= 0.001
         if fadeComplete {
-            stopImmediate()
+            stopGenerating()
         } else {
             // Check again shortly
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) { [weak self] in
@@ -156,10 +273,9 @@ final class ToneGenerator {
         }
     }
 
-    private func stopImmediate() {
-        audioEngine?.stop()
-        sourceNode = nil
-        audioEngine = nil
+    /// Stop generating sound but keep engine running for instant restart
+    private func stopGenerating() {
+        shouldGenerateSound = false
         isPlaying = false
         isFadingOut = false
         fadeOutGain = 1.0
@@ -168,13 +284,40 @@ final class ToneGenerator {
         delayBuffer.removeAll()
         bufferIndex = 0
         sinePhase = 0
+        bodyResonanceState = 0
+        lowFreqHarmonicPhase2x = 0
+        lowFreqHarmonicPhase3x = 0
+        lowFreqHarmonicPhase4x = 0
+    }
+
+    /// Fully stop and tear down the audio engine
+    private func stopImmediate() {
+        shouldGenerateSound = false
+        audioEngine?.stop()
+        sourceNode = nil
+        audioEngine = nil
+        isPlaying = false
+        isEnginePrepared = false
+        isFadingOut = false
+        fadeOutGain = 1.0
+        sineEnvelopeGain = 0
+        sineEnvelopeTarget = 1.0
+        delayBuffer.removeAll()
+        bufferIndex = 0
+        sinePhase = 0
+        bodyResonanceState = 0
+        lowFreqHarmonicPhase2x = 0
+        lowFreqHarmonicPhase3x = 0
+        lowFreqHarmonicPhase4x = 0
     }
 
     private func setupAudioEngine() {
         // Configure audio session for playback
+        // Use .playAndRecord to be compatible with the tuner's microphone session
+        // Use .defaultToSpeaker to ensure sound plays through speaker, not earpiece
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .default, options: [])
+            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
             try session.setActive(true)
         } catch {
             print("ToneGenerator: Audio session setup failed - \(error.localizedDescription)")
@@ -188,25 +331,29 @@ final class ToneGenerator {
         let outputFormat = mainMixer.outputFormat(forBus: 0)
         sampleRate = outputFormat.sampleRate
 
-        // Initialize based on tone type
-        if toneType == .string {
-            initializeDelayBuffer(for: currentFrequency, sampleRate: sampleRate)
-        }
-
-        // Capture tone type to avoid accessing self.toneType in audio thread
-        let useSineWave = toneType == .sine
-
         // Create source node for real-time synthesis
+        // The callback checks shouldGenerateSound and currentToneTypeIsSine dynamically
         sourceNode = AVAudioSourceNode { [weak self] _, _, frameCount, audioBufferList -> OSStatus in
             guard let self else { return noErr }
 
             let ablPointer = UnsafeMutableAudioBufferListPointer(audioBufferList)
 
-            if useSineWave {
-                // Sine wave synthesis
+            // Output silence if not generating sound
+            guard self.shouldGenerateSound else {
+                for buffer in ablPointer {
+                    let buf: UnsafeMutableBufferPointer<Float> = UnsafeMutableBufferPointer(buffer)
+                    for frame in 0 ..< Int(frameCount) {
+                        buf[frame] = 0
+                    }
+                }
+                return noErr
+            }
+
+            if self.currentToneTypeIsSine {
+                // Sine wave synthesis with harmonics
                 self.generateSineWave(frameCount: frameCount, ablPointer: ablPointer)
             } else {
-                // Karplus-Strong synthesis
+                // Extended Karplus-Strong synthesis
                 self.generateKarplusStrong(frameCount: frameCount, ablPointer: ablPointer)
             }
 
@@ -226,6 +373,12 @@ final class ToneGenerator {
         let fadeInRate = Float(1.0 / (fadeInDuration * sampleRate))
         let fadeOutRate = Float(1.0 / (fadeOutDuration * sampleRate))
 
+        // Calculate frequency-dependent boost for low frequencies
+        let frequencyBoost = calculateFrequencyBoost(for: currentFrequency)
+
+        // For very low frequencies, add even more upper harmonics
+        let isVeryLowFreq = currentFrequency < stringVeryLowFreqThreshold
+
         for frame in 0 ..< Int(frameCount) {
             // Smooth envelope transition
             if sineEnvelopeGain < sineEnvelopeTarget {
@@ -234,8 +387,26 @@ final class ToneGenerator {
                 sineEnvelopeGain = max(sineEnvelopeGain - fadeOutRate, sineEnvelopeTarget)
             }
 
-            // Generate sine wave sample
-            let sample = Float(sin(sinePhase)) * sineEnvelopeGain * sineOutputGain
+            // Generate fundamental + harmonics for phone speaker audibility
+            // The brain perceives the fundamental even when mainly hearing harmonics
+            let fundamental = Float(sin(sinePhase))
+            let harmonic2 = Float(sin(sinePhase * 2)) * sineHarmonic2Amplitude
+            let harmonic3 = Float(sin(sinePhase * 3)) * sineHarmonic3Amplitude
+            let harmonic4 = Float(sin(sinePhase * 4)) * sineHarmonic4Amplitude
+
+            var combined = (fundamental + harmonic2 + harmonic3 + harmonic4) / sineNormalizationFactor
+
+            // For very low frequencies (below 100Hz), add 5th and 6th harmonics
+            // These are the frequencies phone speakers can actually reproduce
+            if isVeryLowFreq {
+                let harmonic5 = Float(sin(sinePhase * 5)) * 0.4
+                let harmonic6 = Float(sin(sinePhase * 6)) * 0.3
+                // Add extra harmonics with additional normalization
+                combined += (harmonic5 + harmonic6) / 2.0
+            }
+
+            // Apply envelope, frequency boost, and output gain
+            let sample = combined * sineEnvelopeGain * sineOutputGain * frequencyBoost
 
             // Advance phase
             sinePhase += twoPi * currentFrequency / sampleRate
@@ -254,9 +425,21 @@ final class ToneGenerator {
     // MARK: - Karplus-Strong Generation
 
     private func generateKarplusStrong(frameCount: UInt32, ablPointer: UnsafeMutableAudioBufferListPointer) {
-        guard !delayBuffer.isEmpty else { return }
+        guard !delayBuffer.isEmpty else {
+            // Output silence if buffer not initialized
+            for buffer in ablPointer {
+                let buf: UnsafeMutableBufferPointer<Float> = UnsafeMutableBufferPointer(buffer)
+                for frame in 0 ..< Int(frameCount) {
+                    buf[frame] = 0
+                }
+            }
+            return
+        }
 
         let bufferSize = delayBuffer.count
+        let twoPi = 2.0 * Double.pi
+        let needsHarmonicBoost = currentFrequency < stringLowFreqThreshold
+        let isVeryLowFreq = currentFrequency < stringVeryLowFreqThreshold
 
         for frame in 0 ..< Int(frameCount) {
             // Read current sample from delay line
@@ -276,8 +459,52 @@ final class ToneGenerator {
             // Advance buffer index (circular)
             bufferIndex = nextIndex
 
+            // Apply body resonance simulation (simple one-pole filter)
+            let withResonance = currentSample + bodyResonanceState * bodyResonance
+            bodyResonanceState = withResonance * 0.95 // Slight decay to prevent buildup
+
+            var outputSample = withResonance * outputGain
+
+            // Add harmonic boost for low strings (below 150 Hz) to improve phone speaker audibility
+            if needsHarmonicBoost {
+                let sampleAmplitude = abs(currentSample)
+
+                // Generate 2x harmonic (octave above)
+                let harmonic2x = Float(sin(lowFreqHarmonicPhase2x)) * stringHarmonicBoost2x * sampleAmplitude
+                outputSample += harmonic2x
+
+                // Advance 2x harmonic phase
+                lowFreqHarmonicPhase2x += twoPi * currentFrequency * 2.0 / sampleRate
+                if lowFreqHarmonicPhase2x >= twoPi {
+                    lowFreqHarmonicPhase2x -= twoPi
+                }
+
+                // For very low frequencies (below 100Hz like C, D), add 3x and 4x harmonics
+                // These are the frequencies phone speakers can actually reproduce
+                if isVeryLowFreq {
+                    // Generate 3x harmonic
+                    let harmonic3x = Float(sin(lowFreqHarmonicPhase3x)) * stringHarmonicBoost3x * sampleAmplitude
+                    outputSample += harmonic3x
+
+                    // Generate 4x harmonic
+                    let harmonic4x = Float(sin(lowFreqHarmonicPhase4x)) * stringHarmonicBoost4x * sampleAmplitude
+                    outputSample += harmonic4x
+
+                    // Advance 3x harmonic phase
+                    lowFreqHarmonicPhase3x += twoPi * currentFrequency * 3.0 / sampleRate
+                    if lowFreqHarmonicPhase3x >= twoPi {
+                        lowFreqHarmonicPhase3x -= twoPi
+                    }
+
+                    // Advance 4x harmonic phase
+                    lowFreqHarmonicPhase4x += twoPi * currentFrequency * 4.0 / sampleRate
+                    if lowFreqHarmonicPhase4x >= twoPi {
+                        lowFreqHarmonicPhase4x -= twoPi
+                    }
+                }
+            }
+
             // Apply fade out if stopping
-            var outputSample = currentSample * outputGain
             if isFadingOut {
                 outputSample *= fadeOutGain
                 fadeOutGain = max(0, fadeOutGain - Float(1.0 / (fadeOutDuration * sampleRate)))

@@ -36,8 +36,8 @@ struct HeadstockView: View {
             let height = geometry.size.height
 
             // Headstock dimensions
-            let headstockWidth = width * 0.65
-            let headstockHeight = height * 0.70
+            let headstockWidth = width * 0.85
+            let headstockHeight = height * 0.90
             let headstockTop: CGFloat = 8
             let nutY = headstockTop + headstockHeight
 

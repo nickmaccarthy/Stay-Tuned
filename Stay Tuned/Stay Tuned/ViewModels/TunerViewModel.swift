@@ -157,6 +157,9 @@ final class TunerViewModel: ObservableObject {
 
         setupBindings()
         startDisplayTimer()
+
+        // Pre-initialize the tone generator for instant playback
+        toneGenerator.prepareEngine()
     }
 
     private func setupBindings() {

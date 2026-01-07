@@ -5,6 +5,7 @@
 //  Tests for TunerViewModel business logic
 //
 
+import Foundation
 import Testing
 @testable import Stay_Tuned
 

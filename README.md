@@ -23,6 +23,8 @@
 
 ## ✨ Features
 
+- **Stage Mode** — High-contrast, landscape-locked performance view for live use
+- **Tools Menu** — Consolidated access to metronome, settings, and tuner modes
 - **Real-time Pitch Detection** — YIN-inspired algorithm with vDSP optimizations for accurate, low-latency tuning
 - **Chromatic Tuner** — Detect any note across the full chromatic scale
 - **Multiple Tunings** — Standard, Drop D, DADGAD, Open G/D/C/E/A/B, and more
