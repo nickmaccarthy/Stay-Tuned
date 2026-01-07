@@ -210,3 +210,49 @@ Located in `TipJarView` within `ContentView.swift`:
 - Venmo: `@NickMacCarthy`
 - Cash App: `$NickMacCarthy`
 - PayPal: `nickmaccarthy`
+
+
+## App Store Guidelines Compliance
+
+This app must adhere to Apple's App Store Review Guidelines. Key areas to watch:
+
+
+### Guideline 2.1 - In-App Purchases
+
+When submitting to the App Store:
+- All IAP products must be submitted alongside the app binary
+- Each IAP requires a **screenshot** in App Store Connect
+- IAPs must be marked "Ready to Submit" before app submission
+
+**Current IAP Products:**
+| Product ID | Price | Description |
+|------------|-------|-------------|
+| `nmac.TipCalculator.tip.service.good` | $0.99 | Good Service tip |
+| `nmac.TipCalculator.tip.service.great` | $2.99 | Great Service tip |
+| `nmac.TipCalculator.tip.service.amazing` | $4.99 | Amazing Service tip |
+
+### Guideline 2.3.3 - Screenshots
+
+- iPhone screenshots must show iPhone UI (not iPad)
+- iPad screenshots must show iPad UI (not iPhone in a frame)
+- Screenshots must reflect actual app functionality
+- Avoid marketing materials that don't show the app in use
+
+**Required Screenshot Sizes:**
+| Device | Size (pixels) |
+|--------|---------------|
+| 6.7" iPhone | 1290 × 2796 |
+| 6.5" iPhone | 1284 × 2778 |
+| 12.9" iPad Pro | 2048 × 2732 |
+| 13" iPad Air/Pro | 2064 × 2752 |
+
+### Pre-Submission Checklist
+
+- [ ] All permission request flows use neutral language ("Continue", "Next")
+- [ ] No skip/bypass buttons before system permission dialogs
+- [ ] All IAP products have screenshots in App Store Connect
+- [ ] IAP products are included in the submission
+- [ ] iPhone screenshots taken on iPhone simulator
+- [ ] iPad screenshots taken on iPad simulator (not iPhone in frame)
+- [ ] All unit tests pass
+- [ ] Version and build numbers updated
